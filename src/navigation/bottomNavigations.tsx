@@ -9,6 +9,7 @@ import ProfileforUser from '../screens/UserProfilePages/ProfileforUser';
 import ChatListScreen from '../screens/ChatScreen/ChatListScreen';
 import ReelsScreen from '../screens/Reels/ReelsScreens';
 import CreatePost from '../screens/CreatePost/Createpost';
+import CreatePostStack from './CratePostSatck/CreatePostStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -47,8 +48,7 @@ const BottomTabNavigator = () => {
       />
       <Tab.Screen
         name="AddPost"
-        component={CreatePost}
-        // component={ReelsScreen}
+        component={CreatePostStack}
         options={{
           tabBarIcon: () => (
             <View style={tabStyles.addButtonContainer}>

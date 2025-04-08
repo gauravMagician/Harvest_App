@@ -7,11 +7,15 @@ import {
 } from 'react-native-vision-camera';
 import { launchImageLibrary } from 'react-native-image-picker';
 import styles from './styles';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import images from '../../resources/images';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { CreatePostStackParamList } from '../../navigation/CratePostSatck/CreatePostStack';
 
 const CreatePost = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<CreatePostStackParamList>>();
+  const route = useRoute<RouteProp<CreatePostStackParamList, 'CreatePost'>>();
+  const videoUri = route.params?.videoUri;
   const cameraRef = useRef<Camera | null>(null);
   const devices = useCameraDevices();
   const device = devices.find(d => d.position === 'back');
@@ -21,7 +25,15 @@ const CreatePost = () => {
   const [cameraPosition, setCameraPosition] = useState<'back' | 'front'>(
     'back',
   );
-  const [activeTab, setActiveTab] = useState<'Post' | 'Reels' | 'Live'>('Post');
+  const [activeTab, setActiveTab] = useState<'Post' | 'Reels' | 'Live' | 'Videos'>('Post');
+
+
+  useEffect(() => {
+    if (videoUri) {
+      console.log('Selected video URI:', videoUri);
+    }
+  }, [videoUri]);
+
 
   useEffect(() => {
     const requestCameraPermission = async () => {
@@ -94,7 +106,7 @@ const CreatePost = () => {
     setCameraPosition(prev => (prev === 'back' ? 'front' : 'back'));
   };
 
-  // ❌ Handle No Permission Case
+  //  Handle No Permission Case
   if (!hasPermission) {
     return (
       <Text style={{ color: 'white', textAlign: 'center', marginTop: 50 }}>
@@ -103,7 +115,7 @@ const CreatePost = () => {
     );
   }
 
-  // ❌ Handle No Camera Available Case
+  //  Handle No Camera Available Case
   if (!device) {
     return (
       <Text style={{ color: 'white', textAlign: 'center', marginTop: 50 }}>
@@ -140,8 +152,16 @@ const CreatePost = () => {
                 activeTab === tab ? styles.activeTab : styles.transparentTab,
               ]}
               onPress={() => {
-                setActiveTab(tab as 'Post' | 'Reels' | 'Live' | 'Videos');
-                navigation.navigate(tab);
+                if (tab === 'Videos') {
+                  navigation.navigate('Videos');
+                } else if (tab === 'Reels') {
+                  navigation.navigate('Reels');
+                } else if (tab === 'Live') {
+                  navigation.navigate('Live');
+                } else {
+                  setActiveTab(tab as 'Post' | 'Reels' | 'Live');
+                }
+
               }}>
               <Text
                 style={[
@@ -157,7 +177,7 @@ const CreatePost = () => {
         <View style={styles.controls}>
           {/* 📁 Open Gallery */}
           <TouchableOpacity style={styles.iconButton} onPress={pickImage}>
-            <Image source={images.GALLERY_IMAGE} style={styles.icon} />
+            <Image source={images.IC_GALLERY} style={styles.icon} />
           </TouchableOpacity>
 
           {/* ⚡ Flash Toggle */}

@@ -72,6 +72,11 @@ export default {
   IC_REELS: require("../images/Reelscheck.png"),
   IC_FLASH:require("../images/flash.png"),
   IC_FACEFILTER: require("../images/faceFilter.png"),
-  IC_SWAP:require("../images/ChangeCamera.png")
-
+  IC_SWAP:require("../images/ChangeCamera.png"),
+//=====VediosSections=====/
+ IC_VIDEOS: require("../images/VediosImg.png"),
+ //=====LiveScreens===//
+ IC_SEND:require("../images/send.png"),
+ IC_GALLERY:require("../images/gallery.png"),
+ IC_LIVE_IMAGE:require("../images/LiveImage.png")
 };
