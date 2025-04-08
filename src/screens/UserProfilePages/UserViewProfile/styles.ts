@@ -1,0 +1,273 @@
+import { StyleSheet } from 'react-native';
+import { fontSizes, scaleFontSize, scaleSize, scaleSizeHeight, scaleSizeWidth, spacing } from '../../../utils/deviceDimensions';
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#01081A',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: spacing.medium,
+  },
+  menuButton: {
+    padding: spacing.small,
+  },
+  profileSection: {
+    alignItems: 'center',
+  },
+  profileImage: {
+    width: scaleSizeWidth(70),
+    height: scaleSizeHeight(60),
+    borderRadius: scaleSize(90),
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  cameraButton: {
+    position: 'relative',
+    bottom: scaleSizeHeight(15),
+    left: scaleSizeWidth(19),
+    backgroundColor: 'white',
+    borderRadius: 15,
+    width: scaleSizeWidth(20),
+    height: scaleSizeHeight(15),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraIcon: {
+    width: scaleSizeWidth(11),
+    height: scaleSizeHeight(7),
+  },
+  title: {
+    flexDirection: 'row',
+    position: 'relative',
+    bottom: scaleSizeHeight(10)
+  },
+  profileName: {
+    fontSize: fontSizes.large,
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  detailsSection: {
+    paddingHorizontal: spacing.large,
+  },
+  phoneIcon: {
+    width: scaleSizeWidth(18),
+    height: scaleSizeHeight(18),
+    tintColor: '#788497',
+    resizeMode: 'contain',
+    marginRight: scaleSizeWidth(8),
+  },
+  backIcon: {
+    width: scaleSizeWidth(17),
+    height: scaleSizeHeight(13),
+    tintColor: 'white',
+  },
+  shareIcon: {
+    width: scaleSizeWidth(14),
+    height: scaleSizeHeight(12),
+    tintColor: '#B2BDD0',
+  },
+
+  smallIcon: {
+    width: scaleSizeWidth(9),
+    height: scaleSizeHeight(9),
+    marginTop: scaleSizeHeight(5),
+    marginLeft: scaleSizeWidth(7),
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: spacing.small,
+  },
+  label: {
+    fontSize: fontSizes.medium,
+    color: '#A0AEC0',
+    fontWeight: '700',
+    marginTop: scaleSizeHeight(10),
+    marginBottom: scaleSizeHeight(5),
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  dropdownIcon: {
+    width: 14,
+    height: 6,
+    tintColor: '#788497',
+    marginHorizontal: spacing.small,
+  },
+  phoneInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: scaleSizeHeight(40),
+    borderRadius: 20,
+    borderWidth: 1,
+    paddingHorizontal: spacing.large,
+    marginBottom: spacing.medium,
+    backgroundColor: '#01081A',
+    color: 'white',
+    borderColor: '#27303F',
+    marginTop: scaleSizeHeight(10),
+  },
+  halfInput: {
+    backgroundColor: '#1A1F38',
+    padding: spacing.medium,
+    borderRadius: scaleSize(10),
+    flex: 1,
+    marginHorizontal: spacing.small,
+    color: 'white',
+    fontSize: fontSizes.medium,
+  },
+  inputWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1A1F38',
+    padding: spacing.medium,
+    borderRadius: scaleSize(10),
+    marginVertical: spacing.small,
+  },
+  flag: {
+    width: scaleSize(20),
+    height: scaleSize(15),
+    marginRight: spacing.small,
+  },
+  phoneInput: {
+    flex: 1,
+    color: 'white',
+    fontSize: fontSizes.medium,
+    backgroundColor: '#01081A',
+    borderColor: '#27303F',
+    paddingHorizontal: spacing.small,
+    borderRadius: 17,
+  },
+  dob: {
+    position: 'absolute',
+    left: 10,
+    top: scaleSizeHeight(19),
+    transform: [{ translateY: -10 }],
+    zIndex: 1,
+    width: scaleSizeWidth(18),
+    height: scaleSizeHeight(18),
+  },
+  textArea: {
+    padding: spacing.medium,
+    borderRadius: scaleSize(10),
+    marginVertical: spacing.small,
+    color: 'white',
+    fontSize: fontSizes.medium,
+    minHeight: scaleSizeHeight(60),
+    textAlignVertical: 'top',
+    backgroundColor: '#01081A',
+    borderColor: '#27303F',
+    borderWidth: 1,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  BuytextArea: {
+    borderRadius: scaleSize(20),
+    color: 'white',
+    fontSize: fontSizes.medium,
+    minHeight: scaleSizeHeight(60),
+    textAlignVertical: 'top',
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+  },
+  Button: {
+    marginTop: scaleSizeHeight(10),
+    width: scaleSizeWidth(350),
+    marginVertical: scaleSizeHeight(5),
+    borderRadius: 20
+  },
+  secondButton: {
+    width: scaleSizeWidth(300),
+    marginVertical: scaleSizeHeight(5),
+    borderRadius: 20,
+    marginBottom: 10
+  },
+
+  saveButton: {
+    backgroundColor: '#2962FF',
+    paddingVertical: spacing.medium,
+    borderRadius: scaleSize(10),
+    alignItems: 'center',
+    marginTop: spacing.medium,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: fontSizes.large,
+    fontWeight: 'bold',
+  },
+  toggleViewContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: scaleSizeWidth(12),
+  },
+  toggleButton: {
+    width: scaleSizeWidth(15),
+    height: scaleSizeHeight(12),
+    borderRadius: 15,
+    backgroundColor: "white",
+
+  },
+  toggleContainer: {
+    width: scaleSizeWidth(30),
+    height: scaleSizeHeight(12),
+    borderRadius: 15,
+    backgroundColor: "#333",
+  },
+  Label: {
+    color: '#FFFFFF',
+    fontSize: scaleFontSize(14),
+    fontWeight: '500',
+    marginHorizontal: scaleSizeWidth(5),
+  },
+  toggleLabel: {
+    color: '#FFFFFF',
+    fontSize: scaleFontSize(14),
+    fontWeight: '700',
+    marginHorizontal: scaleSizeWidth(10),
+  },
+  tabsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    // paddingVertical: scaleSizeHeight(5),
+    paddingHorizontal: scaleSizeWidth(15),
+  },
+  tabButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
+  switchView: {
+    flexDirection: 'row',
+    marginHorizontal: scaleSizeWidth(10),
+  },
+  halfWidthInput: {
+    width: '48%',
+  },
+  user: {
+    position: 'relative',
+    zIndex: 1,
+    top: scaleSizeHeight(27),
+    width: scaleSizeWidth(18),
+    height: scaleSizeHeight(18),
+    marginLeft: 10,
+  },
+  BuyViewSubscription: {
+    // flexDirection: 'row',
+    // alignItems: 'center',
+    // height: scaleSizeHeight(40),
+    borderRadius: 20,
+    borderWidth: 1,
+    // paddingHorizontal: spacing.large,
+    // marginBottom: spacing.medium,
+    backgroundColor: '#01081A',
+    color: 'white',
+    borderColor: '#27303F',
+    // marginTop: scaleSizeHeight(10),
+  }
+});
