@@ -1,6 +1,4 @@
 import EncryptedStorage from "react-native-encrypted-storage";
-
-const STORAGE_KEY = "auth_token";
 export const StorageKeys = {
   USER: "user",
   AUTH_TOKEN: "auth_token",

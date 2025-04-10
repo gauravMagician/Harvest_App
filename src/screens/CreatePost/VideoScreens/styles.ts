@@ -1,9 +1,11 @@
+// import { StyleSheet } from 'react-native';
 import { StyleSheet } from 'react-native';
 import {
     scaleSize,
     scaleSizeHeight,
     scaleSizeWidth,
 } from '../../../utils/deviceDimensions';
+
 
 const styles = StyleSheet.create({
     container: {
@@ -94,12 +96,12 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 14,
     },
-    previewContainer: {
-        height: '45%',
-        backgroundColor: '#000',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+    // previewContainer: {
+    //     height: '45%',
+    //     backgroundColor: '#000',
+    //     justifyContent: 'center',
+    //     alignItems: 'center',
+    // },
     previewVideo: {
         width: '100%',
         height: '100%',
@@ -129,6 +131,13 @@ const styles = StyleSheet.create({
     galleryContainer: {
         flex: 1,
         backgroundColor: '#000D1A',
+        marginTop: scaleSizeHeight(10)
+    },
+    previewContainer: {
+        // flex: 1, // Takes half of the screen
+        backgroundColor: 'black',
+        resizeMode: "cover",
+        height: scaleSizeHeight(200)
     },
     loader: {
         flex: 1,
@@ -141,6 +150,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: scaleSize(20),
     },
+
     emptyText: {
         fontSize: scaleSize(16),
         color: '#666',
@@ -162,34 +172,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    videoControls: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: scaleSizeHeight(40),
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: scaleSize(10),
-    },
-    timeText: {
-        color: 'white',
-        fontSize: scaleSize(12),
-        marginHorizontal: scaleSize(5),
-    },
-    progressBar: {
-        flex: 1,
-        height: scaleSizeHeight(2),
-        backgroundColor: 'rgba(255,255,255,0.4)',
-        marginHorizontal: scaleSize(5),
-    },
-    progressFill: {
-        height: '100%',
-        backgroundColor: '#00BFFF',
-    },
 });
 
 export default styles;
+
+
+
+
+
+
+
 
 

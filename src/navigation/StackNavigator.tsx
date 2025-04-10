@@ -38,6 +38,8 @@ import FollowersFollowingScreen from '../screens/FollowerFollowingScreens/Follow
 import PublicProfileScreen from '../screens/PublicProfile/PublicProfileScreen';
 import PostDetails from '../screens/UserProfilePages/PostFullDetalis/PostDetails';
 import VideoSelection from '../screens/CreatePost/VideoScreens/VideoSelection';
+import AuthLoader from '../services/authLoader';
+import MediaDetailsScreen from '../screens/CreatePost/MediaScreens/MediaDetailsScreen';
 
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -80,6 +82,9 @@ const StackNavigator = () => {
         <Stack.Screen name="FollowersFollowingScreen" component={FollowersFollowingScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PublicProfileScreen" component={PublicProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PostDetails" component={PostDetails} options={{ headerShown: false }} />
+        <Stack.Screen name="AuthLoader" component={AuthLoader} options={{ headerShown: false }} />
+        <Stack.Screen name="BottomTab" component={BottomTabNavigator} options={{ headerShown: false }} />
+        <Stack.Screen name="MediaDetailsScreen" component={MediaDetailsScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

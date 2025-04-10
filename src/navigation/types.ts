@@ -1,5 +1,7 @@
 // navigation/types.ts or types.ts
 
+import { Asset } from "react-native-image-picker";
+
 export type RootStackParamList = {
   Splash: undefined;
   EarnScreen: undefined;
@@ -39,4 +41,12 @@ export type RootStackParamList = {
     image: any; // Replace `any` with the actual type of item
     type: string;
   };
+  BottomTab: undefined;
+  AuthLoader: undefined;
+  MediaDetailsScreen: {
+    selectedMedia: Asset[];
+    initialIndex: number;
+    tabTitle: string; 
+  };
+
 };

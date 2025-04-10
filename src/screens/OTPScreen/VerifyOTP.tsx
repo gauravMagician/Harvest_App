@@ -15,12 +15,13 @@ import { StringConstants } from "../../constants/StringConstants";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import images from "../../resources/images";
 import Button from "../../component/Button";
-import { verifyotp } from "../../services/apiActions";
+import { storage, StorageKeys } from "../../utils/storage";
+import { authService } from "../../services/authService";
 
 const VerifyOTP: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const phoneNumber = route?.params?.phone || ""; // Phone number from SignUp screen
+  const phoneNumber = route?.params?.phone || "";
   const [code, setCode] = useState(["", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -46,23 +47,63 @@ const VerifyOTP: React.FC = () => {
   };
 
   // Handle OTP verification
+
   const handleVerifyOTP = async () => {
-    const otp = code.join(""); // Join the OTP digits into a string
-    if (otp.length !== 4) {
-      Alert.alert("Error", "Please enter the full OTP.");
+    const otpCode = code.join("");
+    if (otpCode.length !== 4) {
+      Alert.alert("Invalid OTP", "Please enter a 4-digit OTP.");
       return;
     }
+
     setLoading(true);
     try {
-      const response = await verifyotp({ mobile: phoneNumber, otp });
-      console.log("Verified done",response);
-      // Handle success (e.g., navigate to the next screen)
-      Alert.alert("Success", "OTP verified successfully.");
-      navigation.navigate("Profile"); 
-    } catch (error) {
+      const response = await authService.verifyOtp({ mobile: phoneNumber, otp: otpCode });
+      console.log("000000000", response.token);
+
+      if (response?.message?.includes("verified")) {
+        await storage.setItem(StorageKeys.USER, JSON.stringify(response.user));
+        await storage.setItem(StorageKeys.AUTH_TOKEN, response.token);
+
+        Alert.alert("OTP Verified", response.message);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Profile", params: { userId: response?.userId, phoneNumber } }],
+        });
+      } else {
+        Alert.alert("Error", response?.message || "Invalid OTP. Please try again.");
+      }
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
+
+  // Resend OTP API call
+  const handleResendOTP = async () => {
+    setResending(true);
+    try {
+      const response = await authService.resendOtp({ mobile: phoneNumber });
+
+      if (response.success) {
+        Alert.alert("OTP Resent", response.data.message);
+      } else {
+        Alert.alert(
+          "Error",
+          response?.message || "Failed to resend OTP. Try again."
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error.message || "Something went wrong. Please try again."
+      );
+    } finally {
+      setResending(false);
+    }
+  };
+
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerRow}>
@@ -112,7 +153,7 @@ const VerifyOTP: React.FC = () => {
 
         {/* Resend OTP */}
         <View style={styles.resendWrapper}>
-          <TouchableOpacity disabled={resending} style={styles.resendview}>
+          <TouchableOpacity disabled={resending} style={styles.resendview} onPress={handleResendOTP}>
             <Text style={styles.resendText}>
               {resending ? "Resending..." : "Resend Code"}
             </Text>

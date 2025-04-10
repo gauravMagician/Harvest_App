@@ -5,13 +5,29 @@ import { useNavigation } from '@react-navigation/native';
 import images from '../../resources/images';
 import { StringConstants } from '../../constants/StringConstants';
 import styles from './styles';
+import { storage } from '../../utils/storage';
 
 const SplashScreen = () => {
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
+
     useEffect(() => {
-        setTimeout(() => {
-            navigation.navigate('EarnScreen');
-        }, 2000);
+        const checkAuthAndNavigate = async () => {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            const token = await storage.getToken();
+            if (token) {
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'BottomTab' }],
+                });
+            } else {
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'EarnScreen' }],
+                });
+            }
+        };
+
+        checkAuthAndNavigate();
     }, []);
 
     return (

@@ -3,7 +3,6 @@ import { View, Image, Text, TextInput, TouchableOpacity, FlatList } from 'react-
 import { useNavigation } from '@react-navigation/native';
 import styles from './styles';
 import images from '../../../resources/images';
-// import LinearGradient from 'react-native-linear-gradient';
 const comments = [
     { id: '1', user: 'maxjacobson', text: 'joined' },
     { id: '2', user: 'maxjacobson', text: 'Hi there' },
@@ -16,10 +15,7 @@ const LiveScreen = () => {
         <View style={styles.container}>
             {/* Background */}
             <Image source={images.IC_LIVE_IMAGE} style={styles.backgroundImage} />
-            {/* <LinearGradient
-                colors={['rgba(0,0,0,0.6)', 'rgba(0,0,0,0.2)', 'transparent']}
-                style={styles.gradientOverlay}
-            /> */}
+
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>

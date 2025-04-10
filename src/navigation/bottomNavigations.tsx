@@ -7,8 +7,6 @@ import tabStyles from './tabStyles';
 import UserWalletScreen from '../screens/WalletScreens/UserWalletScreen';
 import ProfileforUser from '../screens/UserProfilePages/ProfileforUser';
 import ChatListScreen from '../screens/ChatScreen/ChatListScreen';
-import ReelsScreen from '../screens/Reels/ReelsScreens';
-import CreatePost from '../screens/CreatePost/Createpost';
 import CreatePostStack from './CratePostSatck/CreatePostStack';
 
 const Tab = createBottomTabNavigator();

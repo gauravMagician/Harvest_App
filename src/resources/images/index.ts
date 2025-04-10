@@ -1,4 +1,4 @@
-export default {
+ export default {
   //----SplashScreen----/
   BG_IMAGE: require("../images/SplashBackimg.png"),
   IC_LOGO: require('./ic_logo.png'),
@@ -78,5 +78,6 @@ export default {
  //=====LiveScreens===//
  IC_SEND:require("../images/send.png"),
  IC_GALLERY:require("../images/gallery.png"),
- IC_LIVE_IMAGE:require("../images/LiveImage.png")
+ IC_LIVE_IMAGE:require("../images/LiveImage.png"),
+ FRIENDS_ICON:require("../images/friend.png")
 };

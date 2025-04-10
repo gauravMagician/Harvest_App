@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     },
     bottomIcon: {
         width: scaleSize(20),
-        height: scaleSize(24),
+        height: scaleSize(20),
         tintColor: '#FFFFFF',
     },
     bottomIconWithDot: {

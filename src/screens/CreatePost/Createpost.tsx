@@ -152,17 +152,26 @@ const CreatePost = () => {
                 activeTab === tab ? styles.activeTab : styles.transparentTab,
               ]}
               onPress={() => {
-                if (tab === 'Videos') {
-                  navigation.navigate('Videos');
-                } else if (tab === 'Reels') {
-                  navigation.navigate('Reels');
-                } else if (tab === 'Live') {
-                  navigation.navigate('Live');
-                } else {
-                  setActiveTab(tab as 'Post' | 'Reels' | 'Live');
-                }
+                setActiveTab(tab as 'Post' | 'Reels' | 'Live' | 'Videos');
 
-              }}>
+                switch (tab) {
+                  case 'Post':
+                    navigation.navigate('Post', { tabTitle: 'post' });
+                    break;
+                  case 'Reels':
+                    navigation.navigate('Reels', { tabTitle: 'Reels' });
+                    break;
+                  case 'Live':
+                    navigation.navigate('Live', { tabTitle: 'Live' });
+                    break;
+                  case 'Videos':
+                    navigation.navigate('Videos', { tabTitle: 'Videos' });
+                    break;
+                }
+              }}
+
+
+            >
               <Text
                 style={[
                   styles.tabText,
