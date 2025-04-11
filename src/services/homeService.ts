@@ -42,6 +42,8 @@ export const homeService = {
   async getHomeFeed(): Promise<ApiResponse<HomeFeedItem[]>> {
     try {
       const response = await axiosInstance.get("/users/home-feed");
+      console.log("post respon form api", response);
+
       return response.data;
     } catch (error: any) {
       console.error("❌ API Error Response:", error.response?.data);

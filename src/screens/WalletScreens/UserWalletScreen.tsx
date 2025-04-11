@@ -1,12 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, FlatList, Image, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { styles } from "./styles";
 import images from "../../resources/images";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../store";
+import { getWithdrawHistory } from "../../store/slices/withdrawSlice";
 
 const UserWalletScreen = () => {
   const navigation = useNavigation();
-
+  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
   const transactions = [
     {
       id: '1',
@@ -71,6 +75,22 @@ const UserWalletScreen = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchHistroy = async () => {
+      setIsLoading(true);
+      try {
+        const response = await dispatch(getWithdrawHistory());;
+
+        console.log(response, "histroyresponse>>>>>");
+
+      } catch (error) {
+        console.error("Error fetching feeds:", error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchHistroy()
+  }, []);
 
   return (
     <View style={styles.container}>

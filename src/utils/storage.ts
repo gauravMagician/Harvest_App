@@ -44,6 +44,8 @@ export const storage = {
   async setItem(key: string, value: any) {
     try {
       await EncryptedStorage.setItem(key, JSON.stringify(value));
+      console.log(">>>>>>>>>>> toiken store", value);
+
     } catch (error) {
       console.error("Storage setItem Error:", error);
     }

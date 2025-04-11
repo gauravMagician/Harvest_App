@@ -9,6 +9,12 @@ import commentModalStyles from './commentModalStyles';
 import images from '../../resources/images';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
+import { storage, StorageKeys } from '../../utils/storage';
+import { homeService } from '../../services/homeService';
+import moment from "moment";
+import { likePost } from '../../store/slices/homeSlice';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../store';
 
 type Post = {
   id: string;
@@ -247,6 +253,7 @@ const users = [
 const HomeScreen = () => {
   type NavigationProp = StackNavigationProp<RootStackParamList, 'PostDetails'>;
   const navigation = useNavigation<NavigationProp>();
+  const dispatch = useDispatch<AppDispatch>();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
   const commentModalRef = useRef<ReusableModalRef>(null);
@@ -255,6 +262,99 @@ const HomeScreen = () => {
   const liveModalRef = useRef<ReusableModalRef>(null);
   const moreModalRef = useRef<ReusableModalRef>(null);
   const [expandedStates, setExpandedStates] = useState<boolean[]>([]);
+  const [userId, setUserId] = useState(null);
+  const [feeds, setFeeds] = useState([]);
+
+
+
+  // Fetch user ID from storage
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const storedUser = await storage.getItem(StorageKeys.USER);
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser?._id) setUserId(parsedUser._id);
+        }
+      } catch (error) {
+        console.error("❌ Error fetching user ID:", error);
+      }
+    };
+    fetchUserId();
+  }, []);
+
+  // Fetch feeds from the backend
+  useEffect(() => {
+    const fetchFeeds = async () => {
+      setIsLoading(true);
+      try {
+        const response = await homeService.getHomeFeed();
+        // const mappedFeeds = response?.map((post) => ({
+        //   id: post?._id || Math.random().toString(),
+        //   username: post?.user?.name || "Unknown",
+        //   userImage: post?.user?.profileImage
+        //     ? { uri: `${post.user.profileImage}` }
+        //     : require("../../resources/images/women.png"),
+        //   totalLikesEarning: post?.totalLikesEarning || 0,
+        //   totalCommentsEarning: post?.totalCommentsEarning || 0,
+        //   totalSharesEarning: post?.totalSharesEarning || 0,
+        //   postImage:
+        //     post?.media?.length > 0
+        //       ? { uri: `${post.media[0]}` }
+        //       : require("../../resources/images/bravewallet.png"),
+        //   likes: post?.likesCount?.toString() || "0",
+        //   comments: post?.commentsCount?.toString() || "0",
+        //   shares: post?.sharesCount?.toString() || "0",
+        //   hvt: `${post?.totalEarnings || 0} HVT`,
+        //   isFollowing: post?.user?.followers?.includes(userId) || false,
+        //   isLiked: post?.likes?.includes(userId) || false,
+        //   likesCount: post?.likesCount || 0,
+        //   commentsCount: post?.commentsCount || 0,
+        //   sharesCount: post?.sharesCount || 0,
+        //   createdAt: post?.createdAt || new Date().toISOString(),
+        //   description: post?.description || "",
+        // }));
+
+        const mappedFeeds = response?.map((post) => ({
+          id: post?._id || Math.random().toString(),
+          caption: post?.caption || "Mahadev", // caption = username from API
+          username: post?.user?.name || "Deo",
+          userImage: post?.user?.profilePic
+            ? { uri: post.user.profilePic }
+            : require("../../resources/images/women.png"),
+          totalLikesEarning: post?.totalLikesEarning || 0,
+          totalCommentsEarning: post?.totalCommentsEarning || 0,
+          totalSharesEarning: post?.totalSharesEarning || 0,
+          postImage:
+            post?.media?.length > 0
+              ? { uri: post.media[0] }
+              : require("../../resources/images/bravewallet.png"),
+          likes: post?.likesCount?.toString() || "0",
+          comments: post?.commentsCount?.toString() || "0",
+          shares: post?.sharesCount?.toString() || "0",
+          hvt: `${post?.totalEarnings || 0} HVT`,
+          isFollowing: post?.isFollowing || false,
+          isLiked: post?.likes?.includes(userId) || false,
+          likesCount: post?.likesCount || 0,
+          commentsCount: post?.commentsCount || 0,
+          sharesCount: post?.sharesCount || 0,
+          createdAt: post?.createdAt || new Date().toISOString(),
+          description: post?.description || "",
+          tags: post?.tags || [],
+          postType: post?.postType || "post",
+          media: post?.media || [],
+        }));
+
+        setFeeds(mappedFeeds);
+      } catch (error) {
+        console.error("Error fetching feeds:", error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (userId) fetchFeeds();
+  }, [userId]);
+  console.log(feeds, 'png');
 
 
   useEffect(() => {
@@ -269,6 +369,41 @@ const HomeScreen = () => {
     );
   };
 
+  // Toggle follow status
+  const toggleFollow = (id: any) => {
+    setFeeds((prev: any) =>
+      prev.map((feed: any) =>
+        feed.id === id ? { ...feed, isFollowing: !feed.isFollowing } : feed
+      )
+    );
+  };
+
+  // Handle liking a post
+  const handleLike = async (postId: any) => {
+    if (!userId) return;
+    try {
+      await dispatch(likePost({ postId, userId })).unwrap();
+      setFeeds((prevFeeds: any) =>
+        prevFeeds.map((feed: any) =>
+          feed.id === postId
+            ? {
+              ...feed,
+              isLiked: !feed.isLiked,
+              likesCount: feed.isLiked
+                ? feed.likesCount - 1
+                : feed.likesCount + 1,
+              likes: (feed.isLiked
+                ? feed.likesCount - 1
+                : feed.likesCount + 1
+              ).toString(),
+            }
+            : feed
+        )
+      );
+    } catch (error) {
+      console.error("Like/unlike failed:", error);
+    }
+  };
 
 
   {/* comment Render items */ }
@@ -359,7 +494,7 @@ const HomeScreen = () => {
 
   )
 
-  {/* comment Render items */ }
+  {/* like Render items */ }
   const renderLikeModal = (
     <View style={styles.modalContainer}>
       <FlatList
@@ -372,8 +507,9 @@ const HomeScreen = () => {
             <TouchableOpacity
               style={[
                 styles.followButtonbottom,
-                // item.isFollowing && styles.followingButtonbottom,
+                item.isFollowing && styles.followingButtonbottom,
               ]}
+              onPress={() => toggleFollow(item.id.toString())}
             // onPress={() => toggleFollow(item.id.toString())}
             >
               <Text
@@ -394,7 +530,7 @@ const HomeScreen = () => {
     </View>
   )
 
-  {/* comment Render items */ }
+  {/* share Render items */ }
   const renderShareModal = (
     <>
       <ScrollView style={styles.TopContainer} horizontal>
@@ -452,8 +588,7 @@ const HomeScreen = () => {
   );
 
   {/* Live Render items */ }
-
-  const renderliveModal = (
+  const renderliveModal = (item: any) => (
     <View style={styles.liveview}>
       <View style={styles.innerView}>
         <View style={styles.TextImgView}>
@@ -461,11 +596,9 @@ const HomeScreen = () => {
             source={require("../../resources/images/Heart.png")}
             style={styles.liveIcon}
           />
-          {/* <Text style={styles.liveText}>{item?.totalLikesEarning}</Text> */}
-          <Text style={styles.liveText}>25k</Text>
+          <Text style={styles.liveText}>{item.likesCount}</Text>
         </View>
-        {/* <Text style={styles.numbertext}>{item?.totalLikesEarning} HVT</Text> */}
-        <Text style={styles.numbertext}>25.50 HVT</Text>
+        <Text style={styles.numbertext}>{item.totalLikesEarning} HVT</Text>
       </View>
       <View style={styles.innerView}>
         <View style={styles.TextImgView}>
@@ -473,11 +606,9 @@ const HomeScreen = () => {
             source={require("../../resources/images/comment.png")}
             style={styles.liveIcon}
           />
-          {/* <Text style={styles.liveText}>{item?.totalCommentsEarning}</Text> */}
-          <Text style={styles.liveText}>25k</Text>
+          <Text style={styles.liveText}>{item.commentsCount}</Text>
         </View>
-        {/* <Text style={styles.numbertext}>{item?.totalCommentsEarning} HVT</Text> */}
-        <Text style={styles.numbertext}>25.50 HVT</Text>
+        <Text style={styles.numbertext}>{item.totalCommentsEarning} HVT</Text>
       </View>
       <View style={styles.innerView}>
         <View style={styles.TextImgView}>
@@ -485,56 +616,14 @@ const HomeScreen = () => {
             source={require("../../resources/images/share.png")}
             style={styles.liveshareIcon}
           />
-          {/* <Text style={styles.liveText}>{item?.totalSharesEarning}</Text> */}
-          <Text style={styles.liveText}>25k</Text>
+          <Text style={styles.liveText}>{item.sharesCount}</Text>
         </View>
-        {/* <Text style={styles.numbertext}>{item?.totalSharesEarning} HVT</Text> */}
-        <Text style={styles.numbertext}>25.50 HVT</Text>
+        <Text style={styles.numbertext}>{item.totalSharesEarning} HVT</Text>
       </View>
     </View>
   );
 
-  {/* Live Render items */ }
-  const renderMoreModal = (
-    <View style={styles.liveview}>
-      <View style={styles.innerView}>
-        <View style={styles.TextImgView}>
-          <Image
-            source={require("../../resources/images/Heart.png")}
-            style={styles.liveIcon}
-          />
-          {/* <Text style={styles.liveText}>{item?.totalLikesEarning}</Text> */}
-          <Text style={styles.liveText}>25k</Text>
-        </View>
-        {/* <Text style={styles.numbertext}>{item?.totalLikesEarning} HVT</Text> */}
-        <Text style={styles.numbertext}>25.50 HVT</Text>
-      </View>
-      <View style={styles.innerView}>
-        <View style={styles.TextImgView}>
-          <Image
-            source={require("../../resources/images/comment.png")}
-            style={styles.liveIcon}
-          />
-          {/* <Text style={styles.liveText}>{item?.totalCommentsEarning}</Text> */}
-          <Text style={styles.liveText}>25k</Text>
-        </View>
-        {/* <Text style={styles.numbertext}>{item?.totalCommentsEarning} HVT</Text> */}
-        <Text style={styles.numbertext}>25.50 HVT</Text>
-      </View>
-      <View style={styles.innerView}>
-        <View style={styles.TextImgView}>
-          <Image
-            source={require("../../resources/images/share.png")}
-            style={styles.liveshareIcon}
-          />
-          {/* <Text style={styles.liveText}>{item?.totalSharesEarning}</Text> */}
-          <Text style={styles.liveText}>25k</Text>
-        </View>
-        {/* <Text style={styles.numbertext}>{item?.totalSharesEarning} HVT</Text> */}
-        <Text style={styles.numbertext}>25.50 HVT</Text>
-      </View>
-    </View>
-  );
+
   return (
     <View style={styles.container}>
       <Loader isLoading={isLoading} />
@@ -620,29 +709,32 @@ const HomeScreen = () => {
       {/* Feeds */}
       <Text style={styles.myfeedtext}> My Feed</Text>
       <FlatList
-        data={posts}
-        keyExtractor={(item) => item?.id}
+        data={feeds}
+        keyExtractor={(item: any) => item?.id}
         showsVerticalScrollIndicator={false}
         renderItem={({ item, index }) => {
-          const fullText = `Lorem ipsum dolor sit  bn bsjbs jsbdjsbjnc bshfvj bhb met ksk consec cbs tetuer #adipiscing #elit welcome to my workld hellod shfsd`;
+          const fullText = item.description || "";
           const previewText = fullText.substring(0, 100);
           const isExpanded = expandedStates[index];
+          // const formattedDate = moment(item.createdAt).fromNow();
+
           return (
             <View style={styles.feedContainer}>
               {/* Feed Header */}
               <View style={styles.feedHeader}>
                 <TouchableOpacity>
-                  <Image source={item.profileImage} style={styles.userImage} />
+                  <Image source={item.userImage} style={styles.userImage} />
                 </TouchableOpacity>
                 <View style={styles.nameView}>
-                  <Text style={styles.username}>{item.name}</Text>
-                  <Text style={styles.timeText}>{item.createdAt}</Text>
+                  <Text style={styles.username}>{item.username}</Text>
+                  <Text style={styles.timeText}>{moment(item.createdAt).fromNow()}</Text>
                 </View>
                 <TouchableOpacity
                   style={[
                     styles.followButton,
                     item.isFollowing && styles.followingButton,
                   ]}
+                  onPress={() => toggleFollow(item.id)}
                 >
                   <Text
                     style={[
@@ -675,27 +767,34 @@ const HomeScreen = () => {
 
               {/* Action Bar */}
               <View style={styles.actionBar}>
-                <TouchableOpacity
-                  onPress={() => LikeModalRef.current?.open()}
-                  style={styles.actionItem}
+                <TouchableOpacity style={styles.actionItem}
+                  onPress={() => handleLike(item.id)}
                 >
                   <Image
-                    source={require("../../resources/images/Heart.png")}
-                    style={styles.actionIcon}
+                    // source={require("../../resources/images/Heart.png")}
+                    source={
+                      item.isLiked
+                        ? require("../../resources/images/Heart.png") // Ensure this image exists
+                        :
+                        require("../../resources/images/PlanHeart.png")
+                    }
+                    style={styles.HartIcon}
                   />
-                  <Text style={styles.actionText}>{item.likes}</Text>
+                  <TouchableOpacity onPress={() => LikeModalRef.current?.open()}>
+                    <Text style={styles.actionText}>{item.likesCount}</Text>
+                  </TouchableOpacity>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                  onPress={() => commentModalRef.current?.open()}
-                  style={styles.actionItem}
-                >
+                <View style={styles.actionItem}>
                   <Image
                     source={require("../../resources/images/comment.png")}
                     style={styles.actionIcon}
                   />
-                  <Text style={styles.actionText}>{item.comments}</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity onPress={() => commentModalRef.current?.open()}>
+                    <Text style={styles.actionText}>{item.comments}</Text>
+                  </TouchableOpacity>
+                </View>
+
 
                 <View style={styles.actionItem}>
                   <Image
@@ -707,21 +806,22 @@ const HomeScreen = () => {
                   </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity
-                  onPress={() => liveModalRef.current?.open()}
-                  style={styles.actionItem}
-                >
+
+                <View style={styles.actionItem}>
                   <Image
                     source={require("../../resources/images/Vector.png")}
                     style={styles.actionIcon}
                   />
-                  <Text style={styles.actionText}>{item.tokens}</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity onPress={() => liveModalRef.current?.open()}>
+                    <Text style={styles.actionText}>{item.hvt}</Text>
+                  </TouchableOpacity>
+                </View>
+
               </View>
 
               {/* Description */}
               <View style={styles.descriptionWrapper}>
-                <Text style={styles.postTitle}>Lorem ipsum dolor nbdnf</Text>
+                <Text style={styles.postTitle}>{item.caption}</Text>
                 <Text style={styles.postDescription}>
                   {isExpanded ? fullText : `${previewText}...`}
                   <Text
@@ -742,7 +842,7 @@ const HomeScreen = () => {
                       source={require("../../resources/images/Heart.png")}
                       style={styles.LikeIcon}
                     />
-                    <Text style={styles.actionText}>{item.likes}</Text>
+                    <Text style={styles.actionText}>{item.likesCount}</Text>
                   </View>
                 }
                 content={renderLikeModal}
@@ -787,21 +887,10 @@ const HomeScreen = () => {
                       source={require("../../resources/images/Vector.png")}
                       style={styles.VectorIcon}
                     />
-                    <Text style={styles.actionText}>{item.tokens}</Text>
+                    <Text style={styles.actionText}>{item.hvt}</Text>
                   </View>
                 }
-                content={renderliveModal}
-                modalHeight={scaleSizeHeight(220)}
-              />
-
-              <ReusableModal
-                ref={moreModalRef}
-                header={
-                  <View style={styles.bottomView}>
-                    <Text style={styles.actionText}>Save</Text>
-                  </View>
-                }
-                content={renderMoreModal}
+                content={renderliveModal(item)}
                 modalHeight={scaleSizeHeight(220)}
               />
             </View>

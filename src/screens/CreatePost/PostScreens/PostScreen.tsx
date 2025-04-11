@@ -176,7 +176,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { launchImageLibrary, Asset } from 'react-native-image-picker';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { setSelectedMedia } from '../../../store/slices/mediaSlice';
+import { setCurrentMediaIndex, setSelectedMedia } from '../../../store/slices/mediaSlice';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../../navigation/types';
 import { CreatePostStackParamList } from '../../../navigation/CratePostSatck/CreatePostStack';
@@ -190,6 +190,8 @@ const PostScreen = () => {
     const dispatch = useDispatch();
     const selectedMedia = useSelector((state: RootState) => state.media.selectedMedia);
     const [media, setMedia] = useState<PhotoIdentifier[]>([]);
+    const [localSelectedMedias, setLocalSelectedMedias] = useState<Asset[]>([]);
+
 
     useEffect(() => {
         requestPermission();
@@ -251,6 +253,22 @@ const PostScreen = () => {
     };
 
 
+    // const handleMediaGridPress = (item: PhotoIdentifier) => {
+    //     const asset: Asset = {
+    //         uri: item.node.image.uri,
+    //         type: item.node.type ?? 'image',
+    //         fileName: item.node.image.filename,
+    //     };
+
+    //     const isAlreadySelected = selectedMedia.some((m) => m.uri === asset.uri);
+
+    //     const updatedMedia = isAlreadySelected
+    //         ? selectedMedia.filter((m) => m.uri !== asset.uri)
+    //         : [...selectedMedia, asset];
+
+    //     dispatch(setSelectedMedia(updatedMedia));
+    // };
+
     const handleMediaGridPress = (item: PhotoIdentifier) => {
         const asset: Asset = {
             uri: item.node.image.uri,
@@ -258,28 +276,31 @@ const PostScreen = () => {
             fileName: item.node.image.filename,
         };
 
-        const isAlreadySelected = selectedMedia.some((m) => m.uri === asset.uri);
+        const isAlreadySelected = localSelectedMedias.some((m) => m.uri === asset.uri);
 
         const updatedMedia = isAlreadySelected
-            ? selectedMedia.filter((m) => m.uri !== asset.uri)
-            : [...selectedMedia, asset];
+            ? localSelectedMedias.filter((m) => m.uri !== asset.uri)
+            : [...localSelectedMedias, asset];
 
-        dispatch(setSelectedMedia(updatedMedia));
+        setLocalSelectedMedias(updatedMedia);
     };
+
 
     const handleGoBack = () => {
         navigation.goBack();
     };
 
     const handleCheckPress = () => {
-        if (selectedMedia.length > 0) {
+        if (localSelectedMedias.length > 0) {
             navigation.navigate('MediaDetailsScreen', {
-                selectedMedia,
+                selectedMedia: localSelectedMedias,
                 initialIndex: 0,
                 tabTitle,
             });
         }
     };
+
+
 
     const renderMediaItem = ({ item }: { item: PhotoIdentifier }) => {
         const uri = item.node.image.uri;

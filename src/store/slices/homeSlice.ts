@@ -58,35 +58,35 @@ export const fetchHomeFeed = createAsyncThunk(
   }
 );
 
-// export const createPost = createAsyncThunk(
-//   "home/createPost",
-//   async (postData: FormData, { rejectWithValue }) => {
-//     try {
-//       const response: ApiResponse<HomeFeedItem> = await homeService.createPost(
-//         postData
-//       );
-//       return response.data;
-//     } catch (error: any) {
-//       return rejectWithValue(error.message);
-//     }
-//   }
-// );
-
-export const createPost = createAsyncThunk<
-  any, // or replace with proper response type
-  FormData,
-  { rejectValue: string }
->(
+export const createPost = createAsyncThunk(
   "home/createPost",
-  async (formData, { rejectWithValue }) => {
+  async (postData: FormData, { rejectWithValue }) => {
     try {
-      const response = await homeService.createPost(formData);
+      const response: ApiResponse<HomeFeedItem> = await homeService.createPost(
+        postData
+      );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.message || "Something went wrong");
+      return rejectWithValue(error.message);
     }
   }
 );
+
+// export const createPost = createAsyncThunk<
+//   any, // or replace with proper response type
+//   FormData,
+//   { rejectValue: string }
+// >(
+//   "home/createPost",
+//   async (formData, { rejectWithValue }) => {
+//     try {
+//       const response = await homeService.createPost(formData);
+//       return response.data;
+//     } catch (error: any) {
+//       return rejectWithValue(error.message || "Something went wrong");
+//     }
+//   }
+// );
 
 export const fetchComments = createAsyncThunk(
   "home/fetchComments",
@@ -142,17 +142,17 @@ export const likePost = createAsyncThunk(
   }
 );
 
-export const unlikePost = createAsyncThunk(
-  "home/unlikePost",
-  async (payload: LikePostPayload, { rejectWithValue }) => {
-    try {
-      await homeService.unlikePost(payload);
-      return { postId: payload.postId };
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
+// export const unlikePost = createAsyncThunk(
+//   "home/unlikePost",
+//   async (payload: LikePostPayload, { rejectWithValue }) => {
+//     try {
+//       await homeService.unlikePost(payload);
+//       return { postId: payload.postId };
+//     } catch (error: any) {
+//       return rejectWithValue(error.message);
+//     }
+//   }
+// );
 
 const homeSlice = createSlice({
   name: "home",

@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
   moreIcon: {
     width: scaleSizeWidth(12),
     height: scaleSizeHeight(12),
+    marginLeft: scaleSize(42)
 
   },
   timeText: {
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
   },
   postImage: {
     width: scaleSizeWidth(401),
-    height: scaleSizeHeight(300),
+    height: scaleSizeHeight(201),
     resizeMode: 'cover',
   },
   actionBar: {
@@ -190,8 +191,14 @@ const styles = StyleSheet.create({
     marginRight: 5,
     tintColor: '#788497',
   },
+  HartIcon: {
+    width: 18,
+    height: 15,
+    marginRight: 5,
+    tintColor: '#788497',
+  },
   LikeIcon: {
-    width: scaleSizeWidth(25),
+    width: scaleSizeWidth(23),
     height: 20,
     marginRight: scaleSizeWidth(5),
   },
@@ -202,8 +209,8 @@ const styles = StyleSheet.create({
     tintColor: "white"
   },
   VectorIcon: {
-    width: scaleSizeWidth(27),
-    height: scaleSizeHeight(20),
+    width: scaleSizeWidth(23),
+    height: scaleSizeHeight(19),
     marginRight: scaleSizeWidth(5),
     tintColor: "white"
   },
@@ -211,6 +218,8 @@ const styles = StyleSheet.create({
     color: '#9BBEFE',
     fontSize: scaleFontSize(15),
     fontWeight: '500',
+    position: "relative",
+    left: 3
   },
   description: {
     color: 'white',

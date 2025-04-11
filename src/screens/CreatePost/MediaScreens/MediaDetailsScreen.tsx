@@ -12,7 +12,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import images from '../../../resources/images';
 import { styles } from './styles';
 import { RootState } from '../../../store';
@@ -48,8 +48,6 @@ const MediaDetailsScreen = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const route = useRoute<RouteProp<RootStackParamList, 'MediaDetailsScreen'>>();
     const { tabTitle } = route.params;
-    console.log("mediafile...", postData.mediaFile);
-    console.log("mediafile", postData.mediaType);
 
 
     useEffect(() => {
@@ -60,7 +58,7 @@ const MediaDetailsScreen = () => {
         }
     }, [initialIndex]);
 
-    const handleInputChange = (name, value) => {
+    const handleInputChange = (name: any, value: any) => {
         setPostData((prev) => ({ ...prev, [name]: value }));
     };
 
@@ -68,7 +66,7 @@ const MediaDetailsScreen = () => {
     const handleAddTag = () => {
         if (tagInput.trim()) {
             const formattedTag = tagInput.startsWith("@") ? tagInput : `@${tagInput}`;
-            setPostData((prev) => ({
+            setPostData((prev: any) => ({
                 ...prev,
                 tags: [...prev.tags, formattedTag],
             }));
@@ -76,7 +74,7 @@ const MediaDetailsScreen = () => {
         }
     };
 
-    const handleRemoveTag = (tagToRemove) => {
+    const handleRemoveTag = (tagToRemove: any) => {
         setPostData((prev) => ({
             ...prev,
             tags: prev.tags.filter((tag) => tag !== tagToRemove),
@@ -164,21 +162,29 @@ const MediaDetailsScreen = () => {
             // formData.append("scheduleTime", postData.scheduleTime);
             // formData.append("amPm", postData.amPm);
             formData.append("postType", tabTitle);
+            // formData.append("postType", postData.mediaFile);
             // Add media file
-            if (postData.mediaFile) {
-                formData.append("media", {
-                    uri: postData.mediaFile,
-                    type: postData.mediaType,
-                    name: 'upload.jpeg',
-                } as any); // 'as any' to avoid TS error with FormData
-            }
             // if (postData.mediaFile) {
-            //     formData.append('media', {
+            //     formData.append("media", {
             //         uri: postData.mediaFile,
-            //         name: 'profile.jpg',
-            //         type: 'image/jpg',
-            //     });
+            //         type: postData.mediaType,
+            //         name: 'upload.jpeg',
+            //     } as any); // 'as any' to avoid TS error with FormData
             // }
+
+            // Add media file if exists
+            if (postData.mediaFile) {
+                const fileUri = postData.mediaFile;
+                const fileExtension = fileUri.split('.').pop();
+                const mimeType = postData.mediaType || (fileExtension === 'mp4' ? 'video/mp4' : 'image/jpeg');
+                const fileName = fileUri.split('/').pop() || 'media-upload';
+
+                formData.append("media", {
+                    uri: fileUri,
+                    type: mimeType,
+                    name: fileName,
+                } as any);
+            }
 
             // dispatch API call
             const resultAction = await dispatch(createPost(formData));

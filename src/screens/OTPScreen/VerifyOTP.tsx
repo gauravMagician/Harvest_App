@@ -58,11 +58,11 @@ const VerifyOTP: React.FC = () => {
     setLoading(true);
     try {
       const response = await authService.verifyOtp({ mobile: phoneNumber, otp: otpCode });
-      console.log("000000000", response.token);
+      // console.log("000000000", response.token);
 
       if (response?.message?.includes("verified")) {
-        await storage.setItem(StorageKeys.USER, JSON.stringify(response.user));
-        await storage.setItem(StorageKeys.AUTH_TOKEN, response.token);
+        // await storage.setItem(StorageKeys.USER, JSON.stringify(response.user));
+        // await storage.setItem(StorageKeys.AUTH_TOKEN, response.token);
 
         Alert.alert("OTP Verified", response.message);
         navigation.reset({
