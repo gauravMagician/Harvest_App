@@ -3,6 +3,8 @@ import { persistStore, persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer from "./slices/authSlice";
 import mediaReducer from "./slices/mediaSlice";
+import homeReducer from "./slices/homeSlice";
+import commentReducer from "./slices/commentSlice";
 // Only persist the auth slice
 const persistConfig = {
   key: "root",
@@ -15,7 +17,8 @@ const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 const store = configureStore({
   reducer: {
     auth: persistedAuthReducer,
-    // home: homeReducer,
+    home: homeReducer,
+    comments: commentReducer,
     // user: userReducer,
     // wallet: walletReducer,
     media: mediaReducer, // newly added reducer

@@ -61,44 +61,10 @@ export const authService = {
       console.error("❌ API Error Response:", error.response?.data);
       throw new Error(
         error.response?.data?.message ||
-          "Profile setup failed. Please try again"
+        "Profile setup failed. Please try again"
       );
     }
   },
-
-  // async setupProfile(profileData: SetupProfileCredentials): Promise<ApiResponse<User>> {
-  //   try {
-  //     const formData = new FormData();
-
-  //     formData.append("name", profileData.userName);
-  //     formData.append("dob", profileData.dob);
-  //     formData.append("gender", profileData.gender);
-  //     formData.append("mobile", profileData.phoneNumber);
-  //     formData.append("referredBy", profileData.referralCode || "");
-  //     formData.append("bio", profileData.bio || "");
-  //     formData.append("isPrivate", profileData.isPublic.toString());
-
-  //     if (profileData.profileImage) {
-  //       formData.append("profilePic", profileData.profileImage);
-  //     }
-
-  //     const response = await axiosInstance.post("/users/setup-profile", formData, {
-  //       headers: {
-  //         "Content-Type": "multipart/form-data",
-  //       },
-  //     });
-
-  //     console.log("✅ API Response:", response);
-
-  //     return response.data;
-  //   } catch (error: any) {
-  //     console.error("❌ API Error Response:", error.response?.data);
-  //     throw new Error(
-  //       error.response?.data?.message || "Profile setup failed. Please try again"
-  //     );
-  //   }
-  // }
-  
 
   async login(credentials: LoginCredentials): Promise<ApiResponse<User>> {
     const response = await axiosInstance.post("/login", credentials);
@@ -133,25 +99,5 @@ export const authService = {
     const response = await axiosInstance.get("/auth/validate-token");
     return response.data;
   },
-  //   async getComments(): Promise<ApiResponse<Comment[]>> {
-  //     try {
-  //       const response = await api.get("/comments/getcomments");
-  //       return response.data;
-  //     } catch (error) {
-  //       throw new Error("Failed to fetch comments. Please try again.");
-  //     }
-  //   },
 
-  //   async postComment(
-  //     payload: PostCommentPayload
-  //   ): Promise<ApiResponse<PostCommentPayload>> {
-  //     try {
-  //       console.log(payload, "payload=======");
-
-  //       const response = await api.post("/comments/addcomment", payload);
-  //       return response.data;
-  //     } catch (error) {
-  //       throw new Error("Failed to post comment. Please try again.");
-  //     }
-  //   },
 };

@@ -215,10 +215,6 @@
 
 
 
-
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
@@ -236,14 +232,29 @@ import images from "../../resources/images";
 import Button from "../../component/Button";
 import { StringConstants } from "../../constants/StringConstants";
 import { authService } from "../../services/authService";
+import {
+  AppKitButton,
+  useAppKitEvents,
+} from "@reown/appkit-wagmi-react-native";
+import { useAccount, useDisconnect, useEnsAvatar, useEnsName } from "wagmi";
 
 const SignUp: React.FC = () => {
   const navigation = useNavigation();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [showText, setShowText] = useState(false);
-
+  const { address } = useAccount();
   console.log("phone number: " + phoneNumber);
+
+  useEffect(() => {
+    if (address) {
+      // const token = "your_auth_token_here"; // Replace with actual token logic
+      console.log("Wallet Address:", address);
+      setTimeout(() => {
+        navigation.navigate("Profile", { walletAddress: address }); // Navigate to Profile
+      }, 100);
+    }
+  }, [address]);
 
   const validatePhoneNumber = (phone: string) => {
     const phoneRegex = /^[6-9]\d{9}$/;
@@ -366,13 +377,13 @@ const SignUp: React.FC = () => {
           </View>
         </View>
 
-        <Button
-          title={StringConstants.CONNECT_WALLET}
-          disabled={loading}
-          loading={loading}
-          style={styles.WalletButton}
-          titleStyle={{ color: "black" }}
+        {/* Replacing the custom Connect Wallet button with AppKitButton */}
+
+        <AppKitButton
+          label={StringConstants.CONNECT_WALLET}
+          connectStyle={styles.secondButton}
         />
+
       </ImageBackground>
     </SafeAreaView>
   );

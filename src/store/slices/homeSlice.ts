@@ -5,8 +5,6 @@ import {
 } from "@reduxjs/toolkit";
 import { ApiResponse } from "../../types/authTypes";
 import { Comment, HomeFeedItem, homeService } from "../../services/homeService";
-import axios from "axios";
-import { BASE_URL } from "../../services/apiEndpoints";
 
 
 interface HomeState {
@@ -15,7 +13,8 @@ interface HomeState {
   error: string | null;
   createPostLoading: boolean;
   createPostError: string | null;
-  comments: Record<string, Comment[]>; // Keyed by postId
+  comments: Record<string, Comment[]>; // part of HomeState
+  // Keyed by postId
   commentsLoading: boolean;
   commentsError: string | null;
   postCommentLoading: boolean;
@@ -72,30 +71,14 @@ export const createPost = createAsyncThunk(
   }
 );
 
-// export const createPost = createAsyncThunk<
-//   any, // or replace with proper response type
-//   FormData,
-//   { rejectValue: string }
-// >(
-//   "home/createPost",
-//   async (formData, { rejectWithValue }) => {
-//     try {
-//       const response = await homeService.createPost(formData);
-//       return response.data;
-//     } catch (error: any) {
-//       return rejectWithValue(error.message || "Something went wrong");
-//     }
-//   }
-// );
-
 export const fetchComments = createAsyncThunk(
   "home/fetchComments",
   async (postId: string, { rejectWithValue }) => {
     try {
       const response = await homeService.getComments(postId);
-      console.log(response, "response.data");
+      console.log(response, "response.data getcomment...........");
 
-      return { postId, comments: response.data };
+      return { postId, comments: response };
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -107,7 +90,8 @@ export const postComment = createAsyncThunk(
   async (payload: PostCommentPayload, { rejectWithValue }) => {
     try {
       const response = await homeService.postComment(payload);
-      return { postId: payload.postId, comment: response.data };
+      console.log("......comment API responsepost slice", response.newComment)
+      return { postId: payload.postId, comment: response.newComment };
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -142,17 +126,19 @@ export const likePost = createAsyncThunk(
   }
 );
 
-// export const unlikePost = createAsyncThunk(
-//   "home/unlikePost",
-//   async (payload: LikePostPayload, { rejectWithValue }) => {
-//     try {
-//       await homeService.unlikePost(payload);
-//       return { postId: payload.postId };
-//     } catch (error: any) {
-//       return rejectWithValue(error.message);
-//     }
-//   }
-// );
+export const unlikePost = createAsyncThunk(
+  "home/unlikePost",
+  async (payload: LikePostPayload, { rejectWithValue }) => {
+    try {
+      await homeService.unlikePost(payload);
+      return { postId: payload.postId };
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
 
 const homeSlice = createSlice({
   name: "home",
@@ -201,14 +187,20 @@ const homeSlice = createSlice({
         state.createPostError = action.payload as string;
       })
 
+
+      .addCase(fetchComments.fulfilled, (state, action) => {
+        state.commentsLoading = false;
+        const comments = action.payload.comments || [];
+        state.comments[action.payload.postId] = comments; // Ensure comments is always an array
+      })
       .addCase(fetchComments.pending, (state) => {
         state.commentsLoading = true;
         state.commentsError = null;
       })
-      .addCase(fetchComments.fulfilled, (state, action) => {
-        state.commentsLoading = false;
-        state.comments[action.payload.postId] = action.payload.comments;
-      })
+      // .addCase(fetchComments.fulfilled, (state, action) => {
+      //   state.commentsLoading = false;
+      //   state.comments[action.payload.postId] = action.payload.comments;
+      // })
       .addCase(fetchComments.rejected, (state, action) => {
         state.commentsLoading = false;
         state.commentsError = action.payload as string;
@@ -229,7 +221,7 @@ const homeSlice = createSlice({
 
         const post = state.feeds.find((feed) => feed._id === postId);
         if (post) {
-          post.commentsCount += 1;
+          post.commentsCount += 1;  // Update comment count on the post
         }
       })
       .addCase(postComment.rejected, (state, action) => {

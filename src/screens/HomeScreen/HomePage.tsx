@@ -1,35 +1,21 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform, ImageSourcePropType } from 'react-native';
+import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, } from 'react-native';
 import ReusableModal, { ReusableModalRef } from '../../component/BottomSheet';
 import Loader from '../../component/Loader';
 import { useNavigation } from '@react-navigation/native';
 import styles from './styles';
 import { scaleSizeHeight } from '../../utils/deviceDimensions';
 import commentModalStyles from './commentModalStyles';
-import images from '../../resources/images';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
 import { storage, StorageKeys } from '../../utils/storage';
 import { homeService } from '../../services/homeService';
 import moment from "moment";
 import { likePost } from '../../store/slices/homeSlice';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../store';
-
-type Post = {
-  id: string;
-  name: string;
-  postImage: ImageSourcePropType;
-  profileImage: ImageSourcePropType;
-  likes: number;
-  comments: number;
-  shares: number;
-  tokens: number;
-  createdAt: string;
-  isFollowing: boolean;
-  description?: string; // ✅ Add this
-};
-
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../store';
+import { fetchComments, postComment } from '../../store/slices/commentSlice';
+import images from '../../resources/images';
 
 const stories = [
   { id: '1', name: 'You', image: require('../../resources/images/women.png'), isUser: true },
@@ -124,81 +110,6 @@ const posts = [
   },
 ];
 
-
-const comments = [
-  {
-    id: "1",
-    username: "John Doe",
-    userImage: require("../../resources/images/women.png"),
-    comment: "Nice  welcome to my world my people",
-    likes: [1, 2],
-    createdAt: "2 W",
-    date: "5d",
-    replies: [
-      {
-        id: "1-1",
-        username: "Jane Wel Smith",
-        userImage: require("../../resources/images/preferenceImg.png"),
-        comment: "Thanks,To Join our team John!",
-        likes: [1],
-        createdAt: "Just now",
-        replies: [],
-        date: "5d"
-      },
-      {
-        id: "1-2",
-        username: "Jane Wel Smith",
-        userImage: require("../../resources/images/preferenceImg.png"),
-        comment: "Thanks,To Join our team John!",
-        likes: [1],
-        createdAt: "Just now",
-        replies: [],
-        date: "5d"
-      }
-    ]
-  },
-  {
-    id: "2",
-    username: "Jane Smith",
-    userImage: require("../../resources/images/women.png"),
-    comment: "Amazing content! 😍",
-    likes: [1],
-    createdAt: "5 mins ago",
-    replies: [],
-    date: "5d"
-  },
-  {
-    id: "3",
-    username: "Jane Smith",
-    userImage: require("../../resources/images/women.png"),
-    comment: "Amazing content! 😍",
-    likes: [1],
-    createdAt: "5 mins ago",
-    replies: [],
-    date: "5d"
-  },
-  {
-    id: "4",
-    username: "Jane Smith",
-    userImage: require("../../resources/images/women.png"),
-    comment: "Amazing content! 😍",
-    likes: [1],
-    createdAt: "5 mins ago",
-    replies: [],
-    date: "5d"
-  },
-  {
-    id: "5",
-    username: "Jane Smith",
-    userImage: require("../../resources/images/women.png"),
-    comment: "Amazing content! 😍",
-    likes: [1],
-    createdAt: "5 mins ago",
-    replies: [],
-    date: "5d"
-  },
-];
-
 const users = [
   {
     id: 1,
@@ -264,7 +175,14 @@ const HomeScreen = () => {
   const [expandedStates, setExpandedStates] = useState<boolean[]>([]);
   const [userId, setUserId] = useState(null);
   const [feeds, setFeeds] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState("");
 
+  const { comments, commentsLoading, postCommentLoading } = useSelector(
+    (state: RootState) => state.comments
+  );
+  console.log(comments);
 
 
   // Fetch user ID from storage
@@ -283,39 +201,14 @@ const HomeScreen = () => {
     fetchUserId();
   }, []);
 
+
   // Fetch feeds from the backend
   useEffect(() => {
     const fetchFeeds = async () => {
       setIsLoading(true);
       try {
         const response = await homeService.getHomeFeed();
-        // const mappedFeeds = response?.map((post) => ({
-        //   id: post?._id || Math.random().toString(),
-        //   username: post?.user?.name || "Unknown",
-        //   userImage: post?.user?.profileImage
-        //     ? { uri: `${post.user.profileImage}` }
-        //     : require("../../resources/images/women.png"),
-        //   totalLikesEarning: post?.totalLikesEarning || 0,
-        //   totalCommentsEarning: post?.totalCommentsEarning || 0,
-        //   totalSharesEarning: post?.totalSharesEarning || 0,
-        //   postImage:
-        //     post?.media?.length > 0
-        //       ? { uri: `${post.media[0]}` }
-        //       : require("../../resources/images/bravewallet.png"),
-        //   likes: post?.likesCount?.toString() || "0",
-        //   comments: post?.commentsCount?.toString() || "0",
-        //   shares: post?.sharesCount?.toString() || "0",
-        //   hvt: `${post?.totalEarnings || 0} HVT`,
-        //   isFollowing: post?.user?.followers?.includes(userId) || false,
-        //   isLiked: post?.likes?.includes(userId) || false,
-        //   likesCount: post?.likesCount || 0,
-        //   commentsCount: post?.commentsCount || 0,
-        //   sharesCount: post?.sharesCount || 0,
-        //   createdAt: post?.createdAt || new Date().toISOString(),
-        //   description: post?.description || "",
-        // }));
-
-        const mappedFeeds = response?.map((post) => ({
+        const mappedFeeds = response?.map((post: any) => ({
           id: post?._id || Math.random().toString(),
           caption: post?.caption || "Mahadev", // caption = username from API
           username: post?.user?.name || "Deo",
@@ -354,7 +247,6 @@ const HomeScreen = () => {
     };
     if (userId) fetchFeeds();
   }, [userId]);
-  console.log(feeds, 'png');
 
 
   useEffect(() => {
@@ -377,6 +269,54 @@ const HomeScreen = () => {
       )
     );
   };
+
+
+  // Fetch comments when a post is selected
+  const handleOpenComments = (post: any) => {
+    if (!post?.id) return;
+    setSelectedPost(post);
+    setSelectedPostId(post.id);
+    dispatch(fetchComments(post.id));
+    commentModalRef.current?.open();
+  };
+
+
+  // Handle sending a comment
+  const handleSendComment = () => {
+    if (!selectedPost || !commentText.trim() || !userId) return;
+
+    dispatch(
+      postComment({
+        postId: selectedPost.id,
+        comment: commentText,
+      })
+    )
+      .unwrap()
+      .then(() => {
+        setCommentText(""); // Clear input
+        dispatch(fetchComments(selectedPost.id)); // Refetch updated list
+        // Update UI counts 
+        setFeeds((prevFeeds: any) =>
+          prevFeeds.map((feed: any) =>
+            feed.id === selectedPost.id
+              ? {
+                ...feed,
+                comments: (feed.commentsCount + 1).toString(),
+                commentsCount: (feed.commentsCount || 0) + 1,
+              }
+              : feed
+          )
+        );
+
+        setSelectedPost((prevPost: any) => ({
+          ...prevPost,
+          comments: (prevPost.commentsCount + 1).toString(),
+          commentsCount: (prevPost.commentsCount || 0) + 1,
+        }));
+      });
+  };
+
+
 
   // Handle liking a post
   const handleLike = async (postId: any) => {
@@ -405,28 +345,39 @@ const HomeScreen = () => {
     }
   };
 
-
   {/* comment Render items */ }
   const renderCommentModal = (
-    <>
-      <View style={{ flex: 1 }}>
-        <View style={commentModalStyles.commentInputWrapper}>
-          <TextInput
-            placeholder="Comment"
-            placeholderTextColor="#999"
-            style={commentModalStyles.commentInput}
+    <View style={{ flex: 1 }}>
+      <View style={commentModalStyles.commentInputWrapper}>
+        <TextInput
+          placeholder="Comment"
+          placeholderTextColor="#999"
+          value={commentText}
+          onChangeText={setCommentText}
+          style={commentModalStyles.commentInput}
+        />
+        <TouchableOpacity style={commentModalStyles.sendButton} onPress={handleSendComment}>
+          <Image
+            source={require("../../resources/images/send.png")}
+            style={commentModalStyles.sendIcon}
           />
-          <TouchableOpacity style={commentModalStyles.sendButton}>
-            <Image source={require("../../resources/images/send.png")} style={commentModalStyles.sendIcon} />
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
+      </View>
 
+      {/* --- Comments List --- */}
+      {commentsLoading ? (
+        <ActivityIndicator size="small" color="#0000ff" />
+      ) : comments[selectedPostId] && comments[selectedPostId].length > 0 ? (
         <FlatList
-          data={comments}
-          keyExtractor={(item) => item.id}
+          data={comments[selectedPostId]}
+          keyExtractor={(item) => item._id || Math.random().toString()}
           renderItem={({ item: comment }) => (
-            <View style={[commentModalStyles.commentRow,]}>
-              <Image source={comment.userImage} style={commentModalStyles.avatar} />
+            <View style={commentModalStyles.commentRow}>
+              <Image source={
+                comment.userImage
+                  ? { uri: comment.userImage }
+                  : require("../../resources/images/women.png")
+              } style={commentModalStyles.avatar} />
               <View style={commentModalStyles.commentContent}>
                 <View style={commentModalStyles.commentContentHeader}>
                   <View style={commentModalStyles.createdView}>
@@ -438,49 +389,45 @@ const HomeScreen = () => {
                     <Image source={images.IC_DOTS} style={commentModalStyles.dots} />
                   </View>
                 </View>
+
                 <View style={commentModalStyles.createdView}>
                   <Text style={commentModalStyles.commentText}>{comment.comment}</Text>
                   <Image source={require("../../resources/images/Heart.png")} style={commentModalStyles.HeartIcons} />
                 </View>
+
                 <View style={commentModalStyles.commentFooter}>
                   <TouchableOpacity style={commentModalStyles.likeButton}>
-                    <Text style={commentModalStyles.likeCount}>{comment.likes?.length || 0} likes</Text>
+                    <Text style={commentModalStyles.likeCount}>
+                      {comment.likes?.length || 0} likes
+                    </Text>
                   </TouchableOpacity>
                 </View>
+
                 {comment.replies && comment.replies.length > 0 && (
                   <View style={commentModalStyles.innercomment}>
-                    {comment.replies.map((reply) => (
-                      <>
-                        <View key={reply.id} style={commentModalStyles.commentRow}>
-                          <Image source={reply.userImage} style={commentModalStyles.avatar} />
-                          <View style={commentModalStyles.commentContent}>
-                            <View style={commentModalStyles.commentContentHeader}>
-                              <View style={commentModalStyles.createdView}>
-                                <Text style={commentModalStyles.commentName}>{reply.username || "Anonymous"}</Text>
-                                <Text style={commentModalStyles.date}>{reply.date}</Text>
-                              </View>
-                              <View style={commentModalStyles.CreatedView}>
-                                <Text style={commentModalStyles.daytext}>{reply.createdAt}</Text>
-                                <Image source={images.IC_DOTS} style={commentModalStyles.dots} />
-                              </View>
+                    {comment.replies.map((reply: any) => (
+                      <View key={reply._id || Math.random().toString()} style={commentModalStyles.commentRow}>
+                        <Image source={{ uri: reply.userImage }} style={commentModalStyles.avatar} />
+                        <View style={commentModalStyles.commentContent}>
+                          <View style={commentModalStyles.commentContentHeader}>
+                            <View style={commentModalStyles.createdView}>
+                              <Text style={commentModalStyles.commentName}>{reply.username || "Anonymous"}</Text>
+                              <Text style={commentModalStyles.date}>{reply.date}</Text>
                             </View>
-                            <View style={commentModalStyles.innercreatedView}>
-                              <Text style={commentModalStyles.commentText}>{reply.comment}</Text>
-                              <Image source={require("../../resources/images/Heart.png")} style={commentModalStyles.HeartIcons} />
+                            <View style={commentModalStyles.createdView}>
+                              <Text style={commentModalStyles.daytext}>{reply.createdAt}</Text>
+                              <Image source={images.IC_DOTS} style={commentModalStyles.dots} />
                             </View>
                           </View>
-                          {/* <View style={commentModalStyles.commentFooter}>
-                        <TouchableOpacity style={commentModalStyles.likeButton}>
-                          <Text style={commentModalStyles.innerlikeCount}>{comment.likes?.length || 0} likes</Text>
-                        </TouchableOpacity>
-                      </View> */}
+                          <View style={commentModalStyles.innercreatedView}>
+                            <Text style={commentModalStyles.commentText}>{reply.comment}</Text>
+                            <Image source={require("../../resources/images/Heart.png")} style={commentModalStyles.HeartIcons} />
+                          </View>
                         </View>
-
-                      </>
+                      </View>
                     ))}
                   </View>
                 )}
-
               </View>
             </View>
           )}
@@ -488,11 +435,12 @@ const HomeScreen = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         />
+      ) : (
+        <Text style={{ padding: 15, color: "#888" }}>No comments available.</Text>
+      )}
+    </View>
+  );
 
-      </View>
-    </>
-
-  )
 
   {/* like Render items */ }
   const renderLikeModal = (
@@ -510,7 +458,6 @@ const HomeScreen = () => {
                 item.isFollowing && styles.followingButtonbottom,
               ]}
               onPress={() => toggleFollow(item.id.toString())}
-            // onPress={() => toggleFollow(item.id.toString())}
             >
               <Text
                 style={[
@@ -771,7 +718,6 @@ const HomeScreen = () => {
                   onPress={() => handleLike(item.id)}
                 >
                   <Image
-                    // source={require("../../resources/images/Heart.png")}
                     source={
                       item.isLiked
                         ? require("../../resources/images/Heart.png") // Ensure this image exists
@@ -785,15 +731,15 @@ const HomeScreen = () => {
                   </TouchableOpacity>
                 </TouchableOpacity>
 
-                <View style={styles.actionItem}>
-                  <Image
-                    source={require("../../resources/images/comment.png")}
-                    style={styles.actionIcon}
-                  />
-                  <TouchableOpacity onPress={() => commentModalRef.current?.open()}>
+                <TouchableOpacity onPress={() => handleOpenComments(item)}>
+                  <View style={styles.actionItem}>
+                    <Image
+                      source={require("../../resources/images/comment.png")}
+                      style={styles.actionIcon}
+                    />
                     <Text style={styles.actionText}>{item.comments}</Text>
-                  </TouchableOpacity>
-                </View>
+                  </View>
+                </TouchableOpacity>
 
 
                 <View style={styles.actionItem}>
@@ -857,7 +803,7 @@ const HomeScreen = () => {
                       source={require("../../resources/images/comment.png")}
                       style={styles.LikeIcon}
                     />
-                    <Text style={styles.actionText}>{item.comments}</Text>
+                    <Text style={styles.actionText}>{selectedPost?.comments || 0}</Text>
                   </View>
                 }
                 content={renderCommentModal}

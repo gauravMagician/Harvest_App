@@ -99,19 +99,23 @@ export const homeService = {
   async getComments(): Promise<ApiResponse<Comment[]>> {
     try {
       const response = await axiosInstance.get("/comments/getcomments");
+      console.log("get comment services", response.data);
       return response.data;
     } catch (error) {
       throw new Error("Failed to fetch comments. Please try again.");
     }
   },
 
+
   async postComment(
     payload: PostCommentPayload
   ): Promise<ApiResponse<PostCommentPayload>> {
     try {
-      console.log(payload, "payload=======");
+      // console.log(payload, "payload=======");
 
       const response = await axiosInstance.post("/comments/comment", payload);
+      console.log("comment API response Services", response.data);
+
       return response.data;
     } catch (error) {
       throw new Error("Failed to post comment. Please try again.");

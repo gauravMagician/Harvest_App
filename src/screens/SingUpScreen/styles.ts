@@ -38,7 +38,7 @@ export default StyleSheet.create({
     alignSelf: "center",
     height: scaleSizeHeight(45),
   },
-  WalletButton:{
+  WalletButton: {
     backgroundColor: "#FFFFFF",
     paddingHorizontal: scaleSizeWidth(30),
     paddingVertical: 14,
@@ -47,7 +47,7 @@ export default StyleSheet.create({
     marginTop: scaleSizeHeight(5),
     alignSelf: "center",
     height: scaleSizeHeight(45),
-    color:"black"
+    color: "black"
   },
 
   logo: {
@@ -158,11 +158,11 @@ export default StyleSheet.create({
 
   // 7) Disclaimer text
   textView: {
-    width:scaleSizeWidth(360),
-    height:scaleSizeHeight(50),
+    width: scaleSizeWidth(360),
+    height: scaleSizeHeight(50),
     paddingHorizontal: scaleSizeWidth(15),
-    marginLeft:scaleSizeWidth(10),
-    marginTop:scaleSizeHeight(5)
+    marginLeft: scaleSizeWidth(10),
+    marginTop: scaleSizeHeight(5)
   },
   bottomtext: {
     color: "#FFFFFF",
