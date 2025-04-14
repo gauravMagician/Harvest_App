@@ -9,6 +9,7 @@ export const postWithdraw = createAsyncThunk(
     try {
       const response: ApiResponse<{ message: string }> =
         await withdrawService.postWithdraw(credentials);
+      // console.log(",,,,,,,,", response);
 
       return response?.data?.message || "Success";
     } catch (error: any) {
@@ -19,13 +20,13 @@ export const postWithdraw = createAsyncThunk(
   }
 );
 
-
-
 export const getWithdrawHistory = createAsyncThunk(
   "withdraw/getWithdrawHistory",
   async (_, { rejectWithValue }) => {
     try {
       const response: ApiResponse<any> = await withdrawService.getWithdrawHistory();
+      console.log("balance slice>>>>>>", response);
+
       return response?.data;
     } catch (error: any) {
       return rejectWithValue(

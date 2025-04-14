@@ -232,29 +232,141 @@ import images from "../../resources/images";
 import Button from "../../component/Button";
 import { StringConstants } from "../../constants/StringConstants";
 import { authService } from "../../services/authService";
-import {
-  AppKitButton,
-  useAppKitEvents,
-} from "@reown/appkit-wagmi-react-native";
-import { useAccount, useDisconnect, useEnsAvatar, useEnsName } from "wagmi";
+import { useWeb3Modal } from '@web3modal/wagmi-react-native';
+import { useAccount } from "wagmi";
+import { storage, StorageKeys } from "../../utils/storage";
 
 const SignUp: React.FC = () => {
-  const navigation = useNavigation();
+  const { open } = useWeb3Modal();
+  const navigation = useNavigation<any>();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [showText, setShowText] = useState(false);
-  const { address } = useAccount();
-  console.log("phone number: " + phoneNumber);
+  const { address, isConnected } = useAccount();
+
+  // useEffect(() => {
+  //   const checkWalletConnection = async () => {
+  //     const walletConnected = await storage.getItem("walletConnected");
+  //     const walletAddress = await storage.getItem("walletAddress");
+
+  //     if (walletConnected === "true" && walletAddress) {
+  //       try {
+  //         // ✅ Call your backend to verify wallet and get user data
+  //         const response = await authService.verifyOtp({ walletAddress: address })// replace with your actual function
+  //         console.log("000000000", response.userId);
+
+  //         if (response?.userId && response?.token) {
+  //           await storage.setItem(StorageKeys.USER, JSON.stringify(response.user));
+  //           await storage.setItem(StorageKeys.AUTH_TOKEN, response.token);
+
+  //           navigation.reset({
+  //             index: 0,
+  //             routes: [{ name: "BottomTab" }],
+  //           });
+  //         } else {
+  //           Alert.alert("Login failed", "Invalid wallet or user not found.");
+  //         }
+  //       } catch (error) {
+  //         console.error("Wallet check failed:", error);
+  //         Alert.alert("Error", "Failed to auto-login. Please try again.");
+  //       }
+  //     }
+  //   };
+
+  //   checkWalletConnection();
+  // }, []);
+
+
+  // // 👉 Handle current wallet connect and save
+  // useEffect(() => {
+  //   if (isConnected && address) {
+  //     console.log("SignUp: Wallet Address:", address);
+  //     storage.setItem("walletConnected", "true");
+  //     storage.setItem("walletAddress", address);
+
+  //     setTimeout(() => {
+  //       navigation.navigate("Profile", { walletAddress: address });
+  //     }, 100);
+  //   } else {
+  //     console.log("SignUp: No wallet connected");
+  //   }
+  // }, [isConnected, address, navigation]);
 
   useEffect(() => {
-    if (address) {
-      // const token = "your_auth_token_here"; // Replace with actual token logic
-      console.log("Wallet Address:", address);
-      setTimeout(() => {
-        navigation.navigate("Profile", { walletAddress: address }); // Navigate to Profile
-      }, 100);
-    }
-  }, [address]);
+    const checkWalletConnection = async () => {
+      const walletConnected = await storage.getItem("walletConnected");
+      const walletAddress = await storage.getItem("walletAddress");
+
+      if (walletConnected === "true" && walletAddress) {
+        try {
+          // 🔁 Check if the wallet already exists in backend
+          const response = await authService.verifyOtp({ walletAddress: address }); // or create a dedicated endpoint like checkWallet()
+
+          if (response?.userId && response?.token) {
+            // 🔐 Save user/token
+            await storage.setItem(StorageKeys.USER, JSON.stringify(response.user));
+            await storage.setItem(StorageKeys.AUTH_TOKEN, response.token);
+
+            // ✅ Navigate directly to main app
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "BottomTab" }],
+            });
+          } else {
+            // If wallet is stored but backend doesn’t recognize → clean storage and stay on signup
+            await storage.removeItem("walletConnected");
+            await storage.removeItem("walletAddress");
+          }
+        } catch (error) {
+          console.error("Auto-login failed:", error);
+          // Optional: Clear invalid wallet storage
+          await storage.removeItem("walletConnected");
+          await storage.removeItem("walletAddress");
+        }
+      }
+    };
+
+    checkWalletConnection();
+  }, []);
+
+  useEffect(() => {
+    const handleWalletConnect = async () => {
+      if (isConnected && address) {
+        console.log("SignUp: Wallet Address:", address);
+
+        // Save to storage
+        await storage.setItem("walletConnected", "true");
+        await storage.setItem("walletAddress", address);
+
+        // 🔁 Check with backend if already registered
+        try {
+          const response = await authService.verifyOtp({ walletAddress: address });
+
+          if (response?.userId && response?.token) {
+            await storage.setItem(StorageKeys.USER, JSON.stringify(response.user));
+            await storage.setItem(StorageKeys.AUTH_TOKEN, response.token);
+
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "BottomTab" }],
+            });
+          } else {
+            // First time: go to Profile setup
+            navigation.navigate("Profile", { walletAddress: address });
+          }
+        } catch (err) {
+          console.log("Wallet connect but check failed:", err);
+          navigation.navigate("Profile", { walletAddress: address });
+        }
+      }
+    };
+
+    handleWalletConnect();
+  }, [isConnected, address]);
+
+
+
+
 
   const validatePhoneNumber = (phone: string) => {
     const phoneRegex = /^[6-9]\d{9}$/;
@@ -379,10 +491,7 @@ const SignUp: React.FC = () => {
 
         {/* Replacing the custom Connect Wallet button with AppKitButton */}
 
-        <AppKitButton
-          label={StringConstants.CONNECT_WALLET}
-          connectStyle={styles.secondButton}
-        />
+        <Button title="Connect Wallet" onPress={() => open()} />;
 
       </ImageBackground>
     </SafeAreaView>

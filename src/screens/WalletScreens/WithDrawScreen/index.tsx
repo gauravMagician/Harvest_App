@@ -97,25 +97,6 @@ const WithdrawalScreen = () => {
 
   console.log(amount);
 
-
-  // const handleWithdraw = async () => {
-  //   if (!amount) {
-  //     Alert.alert("Please enter the amount.");
-  //     return;
-  //   }
-  //   try {
-  //     // const resultAction = await withdraw({ amount: amount });
-  //     console.log(">>>>>>>>>>>>>>>>.", resultAction);
-
-  //     // if (postWithdraw.fulfilled.match(resultAction)) {
-  //     //   navigation.navigate("WithdrawSuccess");
-  //     // } 
-  //   } catch (err) {
-  //     console.log("Withdraw error:", err); 
-  //     Alert.alert("Error", "Something went wrong!");
-  //   }
-  // };
-
   const handleWithdraw = async () => {
     if (!amount) {
       Alert.alert("Please enter the amount.");

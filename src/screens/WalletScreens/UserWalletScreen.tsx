@@ -60,9 +60,9 @@ const UserWalletScreen = () => {
       time: 'Oct 7 2024 at 6:00 PM',
       HVT: "449.4 HVT",
     },
-  ]; // Placeholder for transactions
+  ];
 
-
+  const [balance, setBalance] = useState<number>();
 
   const getStatusColor = (title: string) => {
     switch (title.toLowerCase()) {
@@ -75,21 +75,40 @@ const UserWalletScreen = () => {
     }
   };
 
+
+  // useEffect(() => {
+  //   const fetchHistroy = async () => {
+  //     setIsLoading(true);
+  //     try {
+  //       const response = await dispatch(getWithdrawHistory());;
+
+  //       console.log(response.data.balance, "histroyresponse>>>>>");
+
+  //     } catch (error) {
+  //       console.error("Error fetching feeds:", error.message);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+  //   fetchHistroy()
+  // }, []);
+
   useEffect(() => {
-    const fetchHistroy = async () => {
+    const fetchHistory = async () => {
       setIsLoading(true);
       try {
-        const response = await dispatch(getWithdrawHistory());;
-
-        console.log(response, "histroyresponse>>>>>");
-
+        const response = await dispatch(getWithdrawHistory());
+        // if (response?.balance !== undefined) {
+        //   setBalance(response.balance); // set the balance from API
+        // }
+        console.log(response, "balance of history>>>>");
       } catch (error) {
-        console.error("Error fetching feeds:", error.message);
+        console.error("Error fetching withdraw history:", error.message);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchHistroy()
+    fetchHistory();
   }, []);
 
   return (

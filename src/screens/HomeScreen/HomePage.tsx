@@ -182,7 +182,7 @@ const HomeScreen = () => {
   const { comments, commentsLoading, postCommentLoading } = useSelector(
     (state: RootState) => state.comments
   );
-  console.log(comments);
+  console.log(userId,"///////////////");
 
 
   // Fetch user ID from storage

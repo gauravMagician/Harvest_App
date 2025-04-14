@@ -62,9 +62,8 @@ export const withdrawService = {
         headers: {
           Authorization: `Bearer ${cleanedToken}`,
         },
-      });
-
-      console.log("📜 Withdraw History Response:", response.data);
+      })
+      // console.log("📜 Withdraw History Response:", response.data);
       return response.data;
     } catch (error: any) {
       const errorMessage =

@@ -11,24 +11,31 @@ const SplashScreen = () => {
     const navigation = useNavigation<any>();
 
     useEffect(() => {
-        const checkAuthAndNavigate = async () => {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const token = await storage.getToken();
-            if (token) {
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'BottomTab' }],
-                });
-            } else {
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'EarnScreen' }],
-                });
-            }
-        };
+        setTimeout(() => {
+            navigation.navigate("EarnScreen"); // Navigate to Profile
+        }, 100);
+    })
 
-        checkAuthAndNavigate();
-    }, []);
+
+    // useEffect(() => {
+    //     const checkAuthAndNavigate = async () => {
+    //         await new Promise(resolve => setTimeout(resolve, 1000));
+    //         const token = await storage.getToken();
+    //         if (token) {
+    //             navigation.reset({
+    //                 index: 0,
+    //                 routes: [{ name: 'BottomTab' }],
+    //             });
+    //         } else {
+    //             navigation.reset({
+    //                 index: 0,
+    //                 routes: [{ name: 'EarnScreen' }],
+    //             });
+    //         }
+    //     };
+
+    //     checkAuthAndNavigate();
+    // }, []);
 
     return (
         <ImageBackground source={images.BG_IMAGE} style={styles.container}>

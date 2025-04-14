@@ -21,6 +21,7 @@
     "@reown/appkit-wagmi-react-native": "^1.2.3",
     "@tanstack/react-query": "^5.74.0",
     "@walletconnect/react-native-compat": "^2.19.2",
+    "@web3modal/wagmi-react-native": "^2.0.5",
     "axios": "^1.8.4",
     "moment": "^2.30.1",
     "node-libs-react-native": "^1.2.1",
@@ -48,6 +49,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@babel/plugin-transform-export-namespace-from": "^7.25.9",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
     "@react-native-community/cli": "15.0.1",

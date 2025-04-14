@@ -24,9 +24,11 @@ import { useDispatch } from 'react-redux';
 import { setupProfile } from '../../store/slices/authSlice';
 import { AppDispatch } from '../../store';
 import { storage, StorageKeys } from '../../utils/storage';
+import { useAccount } from "wagmi";
 
 interface RouteParams {
   phoneNumber?: string;
+  walletAddress?: string;
 }
 
 type ProfileScreenRouteProp = RouteProp<{ Profile: RouteParams }, 'Profile'>;
@@ -34,6 +36,9 @@ type ProfileScreenRouteProp = RouteProp<{ Profile: RouteParams }, 'Profile'>;
 const Profile: React.FC = () => {
   const route = useRoute<ProfileScreenRouteProp>();
   const navigation = useNavigation();
+  const { address, isConnected } = useAccount();
+  const walletAddressFromParams = route?.params?.walletAddress;
+  const walletAddress = address || walletAddressFromParams;
   const dispatch = useDispatch<AppDispatch>();
   const [isPublic, setIsPublic] = useState(true);
   const [userName, setUserName] = useState('');
@@ -46,6 +51,23 @@ const Profile: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showGenderModal, setShowGenderModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [walletAddressInput, setWalletAddressInput] = useState(walletAddress);
+
+
+  useEffect(() => {
+    if (route?.params?.phoneNumber) {
+      setPhoneNumber(route?.params?.phoneNumber);
+    }
+    console.log("Profile: Params walletAddress:", walletAddressFromParams);
+    console.log("Profile: Wagmi address:", address);
+    console.log("Profile: isConnected:", isConnected);
+    if (walletAddress) {
+      console.log("Profile: Final walletAddress:", walletAddress);
+    } else {
+      console.log("Profile: No wallet address available");
+    }
+  }, [route?.params, address, isConnected, walletAddressFromParams]);
+
 
   const handleGenderSelect = (selectedGender: any) => {
     setGender(selectedGender);
@@ -109,116 +131,6 @@ const Profile: React.FC = () => {
     }
   }, [route.params]);
 
-
-
-
-
-  // const handleContinue = async () => {
-  //   const formData = new FormData();
-
-  //   formData.append('name', userName);
-  //   formData.append('dob', dob);
-  //   formData.append('gender', gender);
-  //   formData.append('mobile', phoneNumber);
-  //   formData.append('referredBy', referralCode);
-  //   formData.append('bio', bio);
-  //   formData.append('isPrivate', isPublic.toString()); // Convert boolean to string
-
-  //   // Append profile image if exists
-  //   if (profileImage) {
-  //     formData.append('profilePic', {
-  //       uri: profileImage,
-  //       name: 'profile.jpg',
-  //       type: 'image/jpeg',
-  //     });
-  //   }
-
-  //   try {
-  //     const response = await dispatch(setupProfile(formData));
-  //     console.log(">>>>>response", response)
-  //     if (response.payload) {
-  //       console.log(
-  //         '🚀 Profile Setup Success:',
-  //         JSON.stringify(response.payload),
-  //       );
-  //       Alert.alert("Profile Setup Success:");
-
-  //       // Navigate to Main screen after success
-  //       navigation.navigate(ScreenConstants.WALLET_PERFERENCE);
-  //     } else {
-  //       console.error('❌ Profile Setup Failed. No response payload.');
-  //     }
-  //   } catch (error) {
-  //     console.error('❌ Profile Setup Error:', error);
-  //   }
-  // };
-
-  // const handleContinue = async () => {
-  //   // ✅ Validation checks
-  //   if (!userName.trim()) {
-  //     Alert.alert("Validation Error", "Please enter your user name.");
-  //     return;
-  //   }
-
-  //   if (!dob) {
-  //     Alert.alert("Validation Error", "Please select your date of birth.");
-  //     return;
-  //   }
-
-  //   if (!gender) {
-  //     Alert.alert("Validation Error", "Please select your gender.");
-  //     return;
-  //   }
-
-  //   if (!phoneNumber.trim()) {
-  //     Alert.alert("Validation Error", "Please enter your phone number.");
-  //     return;
-  //   }
-
-  //   if (phoneNumber.length < 10) {
-  //     Alert.alert("Validation Error", "Please enter a valid phone number.");
-  //     return;
-  //   }
-
-  //   if (bio.length > 0 && bio.length < 10) {
-  //     Alert.alert("Validation Error", "Bio should be at least 10 characters.");
-  //     return;
-  //   }
-
-  //   // ✅ Create FormData for API call
-  //   const formData = new FormData();
-  //   formData.append('name', userName);
-  //   formData.append('dob', dob);
-  //   formData.append('gender', gender);
-  //   formData.append('mobile', phoneNumber);
-  //   formData.append('referredBy', referralCode);
-  //   formData.append('bio', bio);
-  //   formData.append('isPrivate', isPublic.toString());
-
-  //   if (profileImage) {
-  //     formData.append('profilePic', {
-  //       uri: profileImage,
-  //       name: 'profile.jpg',
-  //       type: 'image/jpeg',
-  //     });
-  //   }
-
-  //   try {
-  //     const response = await dispatch(setupProfile(formData));
-  //     if (response.payload) {
-  //       await storage.setItem(StorageKeys.USER, JSON.stringify(response.user));
-  //       await storage.setItem(StorageKeys.AUTH_TOKEN, response.token);
-  //       Alert.alert("Profile Setup Success");
-  //       navigation.navigate(ScreenConstants.WALLET_PERFERENCE);
-  //     } else {
-  //       console.error('❌ Profile Setup Failed. No response payload.');
-  //     }
-  //   } catch (error) {
-  //     console.error('❌ Profile Setup Error:', error);
-  //   }
-  // };
-
-
   const handleContinue = async () => {
     // ✅ Validation checks
     if (!userName.trim()) {
@@ -236,12 +148,12 @@ const Profile: React.FC = () => {
       return;
     }
 
-    if (!phoneNumber.trim()) {
-      Alert.alert("Validation Error", "Please enter your phone number.");
+    if (!phoneNumber.trim() && !walletAddress) {
+      Alert.alert("Validation Error", "Please provide either a phone number or a wallet address.");
       return;
     }
 
-    if (phoneNumber.length < 10) {
+    if (phoneNumber && phoneNumber.length < 10) {
       Alert.alert("Validation Error", "Please enter a valid phone number.");
       return;
     }
@@ -256,7 +168,12 @@ const Profile: React.FC = () => {
     formData.append('name', userName);
     formData.append('dob', dob);
     formData.append('gender', gender);
-    formData.append('mobile', phoneNumber);
+    // formData.append('mobile', phoneNumber);
+    if (walletAddress) {
+      formData.append('walletAddress', walletAddress);
+    } else if (phoneNumber) {
+      formData.append('mobile', phoneNumber);
+    }
     formData.append('referredBy', referralCode);
     formData.append('bio', bio);
     formData.append('isPrivate', isPublic.toString());
@@ -270,15 +187,16 @@ const Profile: React.FC = () => {
     }
 
     try {
+      setLoading(true);
       const response = await dispatch(setupProfile(formData));
 
       if (response?.payload) {
         const { token, user } = response.payload;
- 
+
         await storage.setItem(StorageKeys.USER, JSON.stringify(user));
         await storage.setItem(StorageKeys.AUTH_TOKEN, token);
-        console.log(">>>>>>>>>>>>",token);
-         
+        console.log(">>>>>>>>>>>>", token);
+
         Alert.alert("Profile Setup Success");
         navigation.navigate(ScreenConstants.WALLET_PERFERENCE);
       } else {
@@ -286,6 +204,8 @@ const Profile: React.FC = () => {
       }
     } catch (error) {
       console.error('❌ Profile Setup Error:', error);
+    } finally {
+      setLoading(false); // Set loading to false when API call completes
     }
   };
 
@@ -422,22 +342,48 @@ const Profile: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Phone Number Input */}
-      <View style={styles.phoneInputContainer}>
-        <Image source={images.IC_FLAG} style={styles.countryFlag} />
-        <Image source={images.IC_DOWN_ARROW} style={styles.dropdownIcon} />
-        <TextInput
-          placeholder='Enter Phone Number'
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          style={styles.phoneInput}
-          keyboardType="phone-pad"
-          placeholderTextColor={"#27303F"}
-        />
-        <TouchableOpacity>
-          <Image source={images.IC_TELEPHONE} style={styles.phoneIcon} />
-        </TouchableOpacity>
-      </View>
+
+
+
+
+      {walletAddress ? (
+        <View style={styles.inputIconContainer}>
+          <Image source={require('../../resources/images/walletAddress.png')} style={styles.user} />
+          <TextInputField
+            placeholder="Wallet Address"
+            value={walletAddressInput}
+            onChangeText={setWalletAddressInput}
+            editable={false}
+            placeholderTextColor="rgba(255, 255, 255, 0.5)"
+            containerStyle={{ marginBottom: spacing.medium }}
+            inputWrapperStyles={{ width: '100%' }}
+            style={{
+              backgroundColor: '#01081A',
+              color: 'white',
+              borderColor: '#27303F',
+              borderRadius: 17,
+              paddingLeft: 40,
+            }}
+          />
+        </View>
+      ) : (
+        <View style={styles.phoneInputContainer}>
+          <Image source={images.IC_FLAG} style={styles.countryFlag} />
+          <Image source={images.IC_DOWN_ARROW} style={styles.dropdownIcon} />
+          <TextInput
+            placeholder="Enter Phone Number"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            style={styles.phoneInput}
+            keyboardType="phone-pad"
+            placeholderTextColor="#27303F"
+          />
+          <TouchableOpacity>
+            <Image source={images.IC_TELEPHONE} style={styles.phoneIcon} />
+          </TouchableOpacity>
+        </View>
+      )}
+
 
       {/* Referral Code */}
       <Text style={styles.referralText}>Have a Referral Code ?</Text>
@@ -479,7 +425,8 @@ const Profile: React.FC = () => {
 
       {/* Save Button */}
       <Button
-        title={StringConstants.SAVE}
+        title={loading ? "Processing" : StringConstants.SAVE}
+        // title={StringConstants.SAVE}
         onPress={handleContinue}
         // onPress={() => navigation.navigate("WalletPreferenceScreen")}
         style={styles.button}
