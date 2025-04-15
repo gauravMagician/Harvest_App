@@ -25,7 +25,7 @@ export const getWithdrawHistory = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response: ApiResponse<any> = await withdrawService.getWithdrawHistory();
-      console.log("balance slice>>>>>>", response);
+      // console.log("balance slice>>>>>>", response);
 
       return response?.data;
     } catch (error: any) {

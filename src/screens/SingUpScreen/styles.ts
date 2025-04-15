@@ -88,7 +88,7 @@ export default StyleSheet.create({
   countryCodeContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: scaleSizeWidth(8),
+    marginRight: scaleSizeWidth(5),
   },
   flagIcon: {
     width: scaleSizeWidth(24),
@@ -101,6 +101,18 @@ export default StyleSheet.create({
     height: scaleSizeHeight(16),
     tintColor: "#FFFFFF",
     resizeMode: "contain",
+    position: "relative",
+    top: 1,
+    right: scaleSizeWidth(5)
+  },
+  upArrowIcon: {
+    width: scaleSizeWidth(25),
+    height: scaleSizeHeight(20),
+    tintColor: "#FFFFFF",
+    resizeMode: "contain",
+    position: "relative",
+    top: 1,
+    right: scaleSizeWidth(5)
   },
   phoneInput: {
     flex: 1,
@@ -139,30 +151,38 @@ export default StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     position: "relative",
-    right: scaleSizeWidth(98),
+    left: scaleSizeWidth(12)
   },
   secondaryButtonText: {
     color: "#FFFFFF",
-    fontSize: scaleFontSize(16),
+    fontSize: scaleFontSize(18),
     fontWeight: "500",
     textAlign: "center",
   },
   downlogo: {
-    width: scaleSizeWidth(15),
-    height: scaleSizeHeight(10),
+    width: scaleSizeWidth(18),
+    height: scaleSizeHeight(12),
     resizeMode: "contain",
     tintColor: "white",
-    marginLeft: scaleSizeWidth(3),
-    marginTop: scaleSizeHeight(3)
+    position: "relative",
+    top: scaleSizeHeight(3),
   },
-
+  upArrow: {
+    width: scaleSizeWidth(28),
+    height: scaleSizeHeight(22),
+    resizeMode: "contain",
+    tintColor: "white",
+    position: "relative",
+    top: scaleSizeHeight(3),
+    right: scaleSizeWidth(2)
+  },
   // 7) Disclaimer text
   textView: {
-    width: scaleSizeWidth(360),
+    width: scaleSizeWidth(300),
     height: scaleSizeHeight(50),
-    paddingHorizontal: scaleSizeWidth(15),
-    marginLeft: scaleSizeWidth(10),
-    marginTop: scaleSizeHeight(5)
+    paddingLeft: 2,
+    marginLeft: scaleSizeWidth(12),
+    marginTop: scaleSizeHeight(3)
   },
   bottomtext: {
     color: "#FFFFFF",
@@ -171,12 +191,12 @@ export default StyleSheet.create({
     fontWeight: "400",
   },
   secondButton: {
-    backgroundColor: "#0360D2",
-    marginTop: scaleSizeHeight(20),
+    backgroundColor: "white",
+    color:"black",
+    marginTop: scaleSizeHeight(18),
     width: scaleSizeHeight(260),
     borderRadius: scaleSize(16),
     height: 56,
-    // color:"#1A202C"
   },
   Centertext: {
     color: "#3FE4FE",
@@ -185,9 +205,21 @@ export default StyleSheet.create({
     position: "relative",
     top: scaleSizeHeight(4),
   },
-  // container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' },
   text: { color: "#fff", fontSize: 16 },
   address: { color: "#00ffcc", fontSize: 14, marginVertical: 10 },
-  // button: { backgroundColor: '#fff', padding: 15, borderRadius: 10 },
   buttonText: { color: "#000", fontWeight: "bold" },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    maxHeight: '70%',
+    backgroundColor: '#fff',
+    borderRadius: scaleSize(10),
+    padding: scaleSize(16),
+    elevation: 5,
+  },
 });

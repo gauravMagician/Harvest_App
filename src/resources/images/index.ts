@@ -6,6 +6,7 @@
   IC_ASSETS: require('./ic_assets.png'),
   IC_TELEPHONE: require('./ic_telephone.png'),
   IC_DOWN_ARROW: require('./ic_down_arrow.png'),
+  IC_UP_ARROW :require('./up-arrow.png'),
   IC_FLAG: require('./ic_flag.png'),
   IC_BACK: require('../images/backicon.png'),
   CHECKED_ICON: require('../images/checkIcon.png'),
@@ -79,5 +80,6 @@
  IC_SEND:require("../images/send.png"),
  IC_GALLERY:require("../images/gallery.png"),
  IC_LIVE_IMAGE:require("../images/LiveImage.png"),
- FRIENDS_ICON:require("../images/friend.png")
+ FRIENDS_ICON:require("../images/friend.png"),
+
 };

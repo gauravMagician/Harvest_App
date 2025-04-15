@@ -41,7 +41,7 @@ export default StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: scaleSizeWidth(20),
     paddingTop: scaleSizeHeight(10),
-    overflow:"scroll"
+    overflow: "scroll"
   },
   createdView: {
     flexDirection: "row",
@@ -167,6 +167,6 @@ export default StyleSheet.create({
     flexDirection: "row",
     position: "relative",
     left: scaleSizeWidth(65)
-  }
-
+  },
+  
 });

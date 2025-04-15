@@ -211,7 +211,6 @@ const ProfileforUser: React.FC = () => {
           <TouchableOpacity
             style={styles.statItem}
             onPress={() => navigation.navigate("FollowersFollowingScreen", { initialTab: 'Followers' })}
-
           >
             {/* <Text style={styles.statNumber}>{profile?.followersCount}</Text> */}
             <Text style={styles.statNumber}>150</Text>
@@ -220,7 +219,6 @@ const ProfileforUser: React.FC = () => {
           <TouchableOpacity
             style={styles.statItem}
             onPress={() => navigation.navigate("FollowersFollowingScreen", { initialTab: 'Following' })}
-
           >
             {/* <Text style={styles.statNumber}>{profile?.followingCount}</Text> */}
             <Text style={styles.statNumber}>190</Text>
@@ -260,25 +258,6 @@ const ProfileforUser: React.FC = () => {
       </View>
 
       {/* Display Filtered Posts */}
-      {/* <FlatList
-        data={posts}
-        keyExtractor={(_, index) => index.toString()}
-        numColumns={3}
-        style={styles.gridList}
-        contentContainerStyle={styles.gridListContent}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.postContainer}
-            onPress={() =>
-              navigation.navigate("PostDetails", {
-                image: item,
-                type: 'image' 
-              })
-            }
-          >
-            <Image source={item} style={styles.postImage} />
-          </TouchableOpacity>
-        )}
-      /> */}
       {renderTabContent()}
 
       {/* More Options Modal */}

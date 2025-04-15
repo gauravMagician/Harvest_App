@@ -11,7 +11,7 @@ import {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1320',
+    backgroundColor: '#010B1F',
   },
   header: {
     flexDirection: 'row',
@@ -40,10 +40,11 @@ const styles = StyleSheet.create({
     height: scaleSizeHeight(40),
   },
   icons: {
-    width: scaleSizeWidth(18),
+    width: scaleSizeWidth(19),
     height: scaleSizeHeight(18),
     marginHorizontal: spacing.medium,
   },
+
   filterBar: {
     flexDirection: 'row',
     paddingHorizontal: spacing.medium,
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
   storyContainer: {
     alignItems: 'center',
     marginHorizontal: spacing.small,
-    height: scaleSizeHeight(90)
+    // height: scaleSizeHeight(90)
   },
   storyImage: {
     width: scaleSize(60),
@@ -177,6 +178,9 @@ const styles = StyleSheet.create({
   actionItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    position: "relative",
+    left: 5
+
   },
   feedtext: {
     fontSize: scaleSize(12),
@@ -192,7 +196,13 @@ const styles = StyleSheet.create({
     tintColor: '#788497',
   },
   HartIcon: {
-    width: 18,
+    width: scaleSizeWidth(17),
+    height: scaleSizeHeight(15),
+    marginRight: scaleSizeWidth(5),
+    tintColor: '#788497',
+  },
+  PlanHartIcon: {
+    width: scaleSizeWidth(17),
     height: 15,
     marginRight: 5,
     tintColor: '#788497',
@@ -259,7 +269,6 @@ const styles = StyleSheet.create({
   },
   myfeedtext: {
     color: 'white',
-    marginTop: scaleSizeHeight(13),
     marginBottom: scaleSizeHeight(2),
     marginLeft: scaleSizeWidth(10),
     fontSize: scaleFontSize(18),
@@ -280,14 +289,12 @@ const styles = StyleSheet.create({
   },
   userRow: {
     width: scaleSizeWidth(316),
-    // height:scaleSizeHeight(60),
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: scaleSizeHeight(12),
     borderBottomWidth: 0.5,
     borderColor: '#333',
     justifyContent: 'space-between',
-    // marginHorizontal: scaleSizeWidth(20),
   },
   avatar: {
     width: scaleSizeWidth(56),
@@ -299,7 +306,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    // marginBottom: scaleSizeHeight(10),
     marginTop: scaleSizeHeight(15),
   },
   sharebottomView: {
@@ -434,9 +440,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: scaleSizeHeight(20),
-    marginLeft: scaleSizeHeight(10),
-    width: scaleSizeWidth(100),
+    marginTop: scaleSizeHeight(10),
+    // marginLeft: scaleSizeHeight(10),
+    width: scaleSizeWidth(110),
     height: scaleSizeHeight(30)
   },
   saveButtonText: {
@@ -476,12 +482,119 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginHorizontal: scaleSizeWidth(10),
     marginVertical: scaleSizeHeight(5)
-    // width:scaleSizeWidth(250)
   },
   postDescription: {
     color: '#fff',
     fontSize: scaleFontSize(14),
   },
+  searchContainer: {
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    alignItems: 'center',
+    backgroundColor: '#010B1F',
+    borderWidth: 1,
+    borderColor: "#27303F",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    width: scaleSizeWidth(221),
+    marginRight: scaleSizeHeight(5)
+  },
+  searchInput: {
+    backgroundColor: '#01081A',
+    color: 'white',
+    borderColor: '#27303F',
+    borderRadius: 17,
+    paddingLeft: 5,
+  },
+  searchicons: {
+    width: scaleSizeWidth(16),
+    height: scaleSizeHeight(16),
+    marginRight: scaleSizeWidth(5)
+  },
+
+  /*** MODAL STYLES ***/
+  modalContent: {
+    position: "absolute",
+    // right:150,
+    backgroundColor: '#010B1F', // Dark background
+    borderRadius: 12,
+    paddingVertical: 15,
+    paddingHorizontal: 12,
+    width: 100,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 1000,
+  },
+  modalItem: {
+    paddingVertical: 5,
+  },
+  modalText: {
+    color: '#FFFFFF',
+    fontSize: scaleFontSize(10),
+    fontWeight: "500"
+  },
+
+  modalOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+
+  // save modal sheet styles 
+
+  checkboxGroup: {
+    // marginBottom: 20,
+    flexDirection: "row"
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: scaleSizeHeight(16),
+    marginLeft: scaleSizeWidth(20)
+  },
+  checkboxImage: {
+    width: scaleSizeWidth(20.5),
+    height: scaleSizeHeight(16),
+    marginRight: scaleSizeWidth(12),
+    tintColor: 'white',
+  },
+  checkboxText: {
+    color: '#9BBEFE',
+    fontSize: scaleFontSize(15),
+    fontWeight: '400',
+  },
+  SaveModal: {
+    marginTop: scaleSizeHeight(15)
+  },
+  categoryText: {
+    fontSize: scaleSize(16),
+    color: '#000',
+  },
+  checkIcon: {
+    width: scaleSize(20),
+    height: scaleSize(20),
+  },
+  nameInput: {
+    width:200,
+    borderWidth: 1,
+    borderColor: 'grey',
+    padding: scaleSize(10),
+    marginVertical: scaleSize(10),
+    borderRadius: 5,
+  },
+  // saveButton: {
+  //   backgroundColor: '#125BE4CC',
+  //   padding: scaleSize(10),
+  //   borderRadius: 5,
+  //   alignItems: 'center',
+  // },
+  // saveButtonText: {
+  //   color: '#fff',
+  //   fontSize: scaleSize(16),
+  // },
+
 });
 
 export default styles;

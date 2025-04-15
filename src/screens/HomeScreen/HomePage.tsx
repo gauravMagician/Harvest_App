@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Modal, findNodeHandle, UIManager, Dimensions, StyleSheet, TouchableOpacityProps, } from 'react-native';
 import ReusableModal, { ReusableModalRef } from '../../component/BottomSheet';
 import Loader from '../../component/Loader';
 import { useNavigation } from '@react-navigation/native';
 import styles from './styles';
-import { scaleSizeHeight } from '../../utils/deviceDimensions';
+import { scaleSize, scaleSizeHeight } from '../../utils/deviceDimensions';
 import commentModalStyles from './commentModalStyles';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
@@ -16,6 +16,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { fetchComments, postComment } from '../../store/slices/commentSlice';
 import images from '../../resources/images';
+import CommentModalContent from './modal/CommentModalContent';
+import LikeModalContent from './modal/LikeModalContent';
 
 const stories = [
   { id: '1', name: 'You', image: require('../../resources/images/women.png'), isUser: true },
@@ -30,86 +32,6 @@ const stories = [
   { id: '10', name: 'Emiley', image: require('../../resources/images/preferenceImg.png') },
   { id: '11', name: 'Emma', image: require('../../resources/images/preferenceImg.png') },
 ];
-
-const posts = [
-  {
-    id: '1',
-    name: 'Amelia John',
-    time: '30 sec ago',
-    profileImage: require('../../resources/images/women.png'),
-    postImage: require('../../resources/images/post2.png'),
-    likes: '12.5K',
-    comments: '8.5K',
-    shares: '5.6K',
-    tokens: '1.2K HVT',
-    text: 'Lorem ipsum dolor sit...',
-    isFollowing: true,
-    createdAt: "30 sec ago"
-
-
-  },
-  {
-    id: '2',
-    name: 'Amelia John',
-    time: '30 sec ago',
-    profileImage: require('../../resources/images/women.png'),
-    postImage: require('../../resources/images/user5.png'),
-    likes: '12.5K',
-    comments: '8.5K',
-    shares: '5.6K',
-    tokens: '1.2K HVT',
-    text: 'Lorem ipsum dolor sit...',
-    isFollowing: true,
-    createdAt: "30 sec ago"
-
-  },
-  {
-    id: '3',
-    name: 'Amelia John',
-    time: '30 sec ago',
-    profileImage: require('../../resources/images/women.png'),
-    postImage: require('../../resources/images/post2.png'),
-    likes: '12.5K',
-    comments: '8.5K',
-    shares: '5.6K',
-    tokens: '1.2K HVT',
-    text: 'Lorem ipsum dolor sit...',
-    isFollowing: true,
-    createdAt: "30 sec ago"
-
-  },
-  {
-    id: '4',
-    name: 'Amelia John',
-    time: '30 sec ago',
-    profileImage: require('../../resources/images/women.png'),
-    postImage: require('../../resources/images/post2.png'),
-    likes: '12.5K',
-    comments: '8.5K',
-    shares: '5.6K',
-    tokens: '1.2K HVT',
-    text: 'Lorem ipsum dolor sit...',
-    isFollowing: true,
-    createdAt: "30 sec ago"
-
-  },
-  {
-    id: '5',
-    name: 'Amelia John',
-    time: '30 sec ago',
-    profileImage: require('../../resources/images/women.png'),
-    postImage: require('../../resources/images/post2.png'),
-    likes: '12.5K',
-    comments: '8.5K',
-    shares: '5.6K',
-    tokens: '1.2K HVT',
-    text: 'Lorem ipsum dolor sit...',
-    isFollowing: true,
-    createdAt: "30 sec ago"
-
-  },
-];
-
 const users = [
   {
     id: 1,
@@ -160,6 +82,7 @@ const users = [
     isFollowing: false,
   },
 ];
+const options = ['funny', 'Entertainment', 'Tech', 'Create New '];
 
 const HomeScreen = () => {
   type NavigationProp = StackNavigationProp<RootStackParamList, 'PostDetails'>;
@@ -171,19 +94,77 @@ const HomeScreen = () => {
   const LikeModalRef = useRef<ReusableModalRef>(null);
   const ShareModalRef = useRef<ReusableModalRef>(null);
   const liveModalRef = useRef<ReusableModalRef>(null);
-  const moreModalRef = useRef<ReusableModalRef>(null);
+  const dotRef = useRef<View>(null);
+  const filterRef = useRef<View>(null); // Ref for filter buttons
   const [expandedStates, setExpandedStates] = useState<boolean[]>([]);
   const [userId, setUserId] = useState(null);
   const [feeds, setFeeds] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
+  const screenWidth = Dimensions.get('window').width;
+  const { comments, commentsLoading, postCommentLoading } = useSelector((state: RootState) => state.comments);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalPosition, setModalPosition] = useState({ top: 0, right: 0 });
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [filterModalVisible, setIsFilterModalVisible] = useState(false);
 
-  const { comments, commentsLoading, postCommentLoading } = useSelector(
-    (state: RootState) => state.comments
-  );
-  console.log(userId,"///////////////");
+  const saveModalRef = useRef<ReusableModalRef>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
 
+
+  const toggleCheckbox = (option: string) => {
+    if (option === 'All') {
+      if (selectedCategory.includes('All')) {
+        setSelectedCategory([]);
+      } else {
+        setSelectedCategory([...options]);
+      }
+    } else {
+      let updatedOptions = [...selectedCategory];
+      if (updatedOptions.includes(option)) {
+        updatedOptions = updatedOptions.filter(item => item !== option);
+      } else {
+        updatedOptions.push(option);
+      }
+
+      if (updatedOptions.length === options.length - 1) {
+        updatedOptions.push('All');
+      } else {
+        updatedOptions = updatedOptions.filter(item => item !== 'All');
+      }
+
+      setSelectedCategory(updatedOptions);
+    }
+  };
+
+  const handleSave = () => {
+    setIsModalVisible(false); // Close the more options modal
+    saveModalRef.current?.open(); // Open the save bottom sheet
+  };
+  const toggleSearch = () => {
+    setIsSearchVisible(!isSearchVisible);
+  };
+
+  const openModal = () => {
+    const handle = findNodeHandle(dotRef.current);
+    if (handle) {
+      UIManager.measure(handle, (_x, _y, _width, _height, pageX, pageY) => {
+        setModalPosition({ top: pageY + 20, right: screenWidth - pageX - 8 });
+        setIsModalVisible(true);
+      });
+    }
+  };
+
+  const OpenFilterModal = () => {
+    const handle = findNodeHandle(filterRef.current);
+    if (handle) {
+      UIManager.measure(handle, (_x, _y, _width, _height, pageX, pageY) => {
+        setModalPosition({ top: pageY + 30, right: screenWidth - pageX - 5 });
+        setIsFilterModalVisible(true);
+      });
+    }
+  };
 
   // Fetch user ID from storage
   useEffect(() => {
@@ -200,7 +181,6 @@ const HomeScreen = () => {
     };
     fetchUserId();
   }, []);
-
 
   // Fetch feeds from the backend
   useEffect(() => {
@@ -250,10 +230,10 @@ const HomeScreen = () => {
 
 
   useEffect(() => {
-    if (posts?.length) {
-      setExpandedStates(Array(posts.length).fill(false));
+    if (feeds?.length) {
+      setExpandedStates(Array(feeds.length).fill(false));
     }
-  }, [posts]);
+  }, [feeds]);
 
   const toggleReadMore = (index: number) => {
     setExpandedStates((prevStates) =>
@@ -316,8 +296,6 @@ const HomeScreen = () => {
       });
   };
 
-
-
   // Handle liking a post
   const handleLike = async (postId: any) => {
     if (!userId) return;
@@ -344,138 +322,6 @@ const HomeScreen = () => {
       console.error("Like/unlike failed:", error);
     }
   };
-
-  {/* comment Render items */ }
-  const renderCommentModal = (
-    <View style={{ flex: 1 }}>
-      <View style={commentModalStyles.commentInputWrapper}>
-        <TextInput
-          placeholder="Comment"
-          placeholderTextColor="#999"
-          value={commentText}
-          onChangeText={setCommentText}
-          style={commentModalStyles.commentInput}
-        />
-        <TouchableOpacity style={commentModalStyles.sendButton} onPress={handleSendComment}>
-          <Image
-            source={require("../../resources/images/send.png")}
-            style={commentModalStyles.sendIcon}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* --- Comments List --- */}
-      {commentsLoading ? (
-        <ActivityIndicator size="small" color="#0000ff" />
-      ) : comments[selectedPostId] && comments[selectedPostId].length > 0 ? (
-        <FlatList
-          data={comments[selectedPostId]}
-          keyExtractor={(item) => item._id || Math.random().toString()}
-          renderItem={({ item: comment }) => (
-            <View style={commentModalStyles.commentRow}>
-              <Image source={
-                comment.userImage
-                  ? { uri: comment.userImage }
-                  : require("../../resources/images/women.png")
-              } style={commentModalStyles.avatar} />
-              <View style={commentModalStyles.commentContent}>
-                <View style={commentModalStyles.commentContentHeader}>
-                  <View style={commentModalStyles.createdView}>
-                    <Text style={commentModalStyles.commentName}>{comment.username || "Anonymous"}</Text>
-                    <Text style={commentModalStyles.date}>{comment.date}</Text>
-                  </View>
-                  <View style={commentModalStyles.createdView}>
-                    <Text style={commentModalStyles.daytext}>{comment.createdAt}</Text>
-                    <Image source={images.IC_DOTS} style={commentModalStyles.dots} />
-                  </View>
-                </View>
-
-                <View style={commentModalStyles.createdView}>
-                  <Text style={commentModalStyles.commentText}>{comment.comment}</Text>
-                  <Image source={require("../../resources/images/Heart.png")} style={commentModalStyles.HeartIcons} />
-                </View>
-
-                <View style={commentModalStyles.commentFooter}>
-                  <TouchableOpacity style={commentModalStyles.likeButton}>
-                    <Text style={commentModalStyles.likeCount}>
-                      {comment.likes?.length || 0} likes
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {comment.replies && comment.replies.length > 0 && (
-                  <View style={commentModalStyles.innercomment}>
-                    {comment.replies.map((reply: any) => (
-                      <View key={reply._id || Math.random().toString()} style={commentModalStyles.commentRow}>
-                        <Image source={{ uri: reply.userImage }} style={commentModalStyles.avatar} />
-                        <View style={commentModalStyles.commentContent}>
-                          <View style={commentModalStyles.commentContentHeader}>
-                            <View style={commentModalStyles.createdView}>
-                              <Text style={commentModalStyles.commentName}>{reply.username || "Anonymous"}</Text>
-                              <Text style={commentModalStyles.date}>{reply.date}</Text>
-                            </View>
-                            <View style={commentModalStyles.createdView}>
-                              <Text style={commentModalStyles.daytext}>{reply.createdAt}</Text>
-                              <Image source={images.IC_DOTS} style={commentModalStyles.dots} />
-                            </View>
-                          </View>
-                          <View style={commentModalStyles.innercreatedView}>
-                            <Text style={commentModalStyles.commentText}>{reply.comment}</Text>
-                            <Image source={require("../../resources/images/Heart.png")} style={commentModalStyles.HeartIcons} />
-                          </View>
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-            </View>
-          )}
-          contentContainerStyle={{ paddingBottom: scaleSizeHeight(20) }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        />
-      ) : (
-        <Text style={{ padding: 15, color: "#888" }}>No comments available.</Text>
-      )}
-    </View>
-  );
-
-
-  {/* like Render items */ }
-  const renderLikeModal = (
-    <View style={styles.modalContainer}>
-      <FlatList
-        data={users}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.userRow}>
-            <Image source={item.avatar} style={styles.avatar} />
-            <Text style={styles.bottomname}>{item.name}</Text>
-            <TouchableOpacity
-              style={[
-                styles.followButtonbottom,
-                item.isFollowing && styles.followingButtonbottom,
-              ]}
-              onPress={() => toggleFollow(item.id.toString())}
-            >
-              <Text
-                style={[
-                  styles.followTextbottom,
-                  // item.isFollowing && styles.followingTextbottom,
-                ]}
-              >
-                {item.isFollowing ? "Following" : "Follow"}
-              </Text>
-            </TouchableOpacity>
-
-
-          </View>
-        )}
-        scrollEnabled={true}
-      />
-    </View>
-  )
 
   {/* share Render items */ }
   const renderShareModal = (
@@ -570,279 +416,430 @@ const HomeScreen = () => {
     </View>
   );
 
-
   return (
     <View style={styles.container}>
       <Loader isLoading={isLoading} />
-      {/* Header */}
-      <View style={styles.header}>
-        <Image
-          source={require("../../resources/images/Logo.png")}
-          style={styles.headerIcon}
-        />
-        <View style={styles.headerIcons}>
-          <Image
-            source={require("../../resources/images/search.png")}
-            style={styles.icons}
-          />
-          <TouchableOpacity
-            onPress={() => navigation.navigate("SettingPage")}
-          >
-            <Image
-              source={require("../../resources/images/Frame_img.png")}
-              style={styles.icons}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("NotificationPage")}
-          >
-            <Image
-              source={require("../../resources/images/Notification.png")}
-              style={styles.icons}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Filters */}
+      {/* Scrollable Header Section */}
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterContainer}
-      >
-        {["All", "Trending", "For You", "Live", "Following", "Gaming", "Technology", "Crypto"].map((item) => (
-          <TouchableOpacity
-            key={item}
-            style={[
-              styles.filterButton,
-              { backgroundColor: selectedFilter === item ? "#125BE4CC" : "#FFFFFF" },
-            ]}
-            onPress={() => setSelectedFilter(item)}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                { color: selectedFilter === item ? "#FFFFFF" : "#000000" },
-              ]}
-            >
-              {item}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Stories */}
-      <Text style={styles.Toptext}> Top Stories</Text>
-      <FlatList
-        data={stories}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.storyListContainer}
-        renderItem={({ item }) => (
-          <View style={styles.storyContainer}>
-            <Image source={item.image} style={styles.storyImage} />
-
-            <Text style={styles.storyName}>{item.name}</Text>
-            {item.isUser && (
-              <View style={styles.addStory}>
-                <Text style={styles.plusIcon}>+</Text>
-              </View>
-            )}
-          </View>
-        )}
-      />
-
-      {/* Feeds */}
-      <Text style={styles.myfeedtext}> My Feed</Text>
-      <FlatList
-        data={feeds}
-        keyExtractor={(item: any) => item?.id}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item, index }) => {
-          const fullText = item.description || "";
-          const previewText = fullText.substring(0, 100);
-          const isExpanded = expandedStates[index];
-          // const formattedDate = moment(item.createdAt).fromNow();
+        nestedScrollEnabled
+        contentContainerStyle={{ paddingBottom: scaleSize(16) }}
+      >
 
-          return (
-            <View style={styles.feedContainer}>
-              {/* Feed Header */}
-              <View style={styles.feedHeader}>
-                <TouchableOpacity>
-                  <Image source={item.userImage} style={styles.userImage} />
-                </TouchableOpacity>
-                <View style={styles.nameView}>
-                  <Text style={styles.username}>{item.username}</Text>
-                  <Text style={styles.timeText}>{moment(item.createdAt).fromNow()}</Text>
-                </View>
-                <TouchableOpacity
-                  style={[
-                    styles.followButton,
-                    item.isFollowing && styles.followingButton,
-                  ]}
-                  onPress={() => toggleFollow(item.id)}
-                >
-                  <Text
-                    style={[
-                      styles.followText,
-                      item.isFollowing && styles.followingText,
-                    ]}
-                  >
-                    {item.isFollowing ? "Following" : "Follow"}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => moreModalRef.current?.open()}>
-                  <Image
-                    source={require("../../resources/images/more.png")}
-                    style={styles.moreIcon}
-                  />
-                </TouchableOpacity>
+        {/* Header */}
+        <View style={styles.header}>
+          <Image
+            source={require("../../resources/images/Logo.png")}
+            style={styles.headerIcon}
+          />
+          <View style={styles.headerIcons}>
+            {isSearchVisible ? (
+              <View style={styles.searchContainer}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search"
+                  placeholderTextColor="#999"
+                  autoFocus={true}
+                  onBlur={toggleSearch} // Hide input when focus is lost
+                />
+                <Image
+                  source={require("../../resources/images/search.png")}
+                  style={styles.searchicons}
+                />
               </View>
-
-              {/* Post Image */}
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate("PostDetails", {
-                    image: item.postImage,
-                    type: "image",
-                  })
-                }
-              >
-                <Image source={item.postImage} style={styles.postImage} />
+            ) : (
+              <TouchableOpacity onPress={toggleSearch}>
+                <Image
+                  source={require("../../resources/images/search.png")}
+                  style={styles.icons}
+                />
               </TouchableOpacity>
+            )}
+            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+              <TouchableOpacity
+                // onPress={() => navigation.navigate("SettingPage")}
+                ref={filterRef}
+                onPress={OpenFilterModal}
+              >
+                <Image
+                  source={require("../../resources/images/Frame_img.png")}
+                  style={styles.icons}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("NotificationPage")}
+              >
+                <Image
+                  source={require("../../resources/images/Notification.png")}
+                  style={styles.icons}
+                />
+              </TouchableOpacity>
+            </View>
 
-              {/* Action Bar */}
-              <View style={styles.actionBar}>
-                <TouchableOpacity style={styles.actionItem}
-                  onPress={() => handleLike(item.id)}
-                >
-                  <Image
-                    source={
-                      item.isLiked
-                        ? require("../../resources/images/Heart.png") // Ensure this image exists
-                        :
-                        require("../../resources/images/PlanHeart.png")
-                    }
-                    style={styles.HartIcon}
-                  />
-                  <TouchableOpacity onPress={() => LikeModalRef.current?.open()}>
-                    <Text style={styles.actionText}>{item.likesCount}</Text>
+          </View>
+        </View>
+
+        {/* Filters */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContainer}
+        >
+          {["All", "Trending", "For You", "Live", "Following", "Gaming", "Technology", "Crypto"].map((item) => (
+            <TouchableOpacity
+              key={item}
+              style={[
+                styles.filterButton,
+                { backgroundColor: selectedFilter === item ? "#125BE4CC" : "#FFFFFF" },
+              ]}
+              onPress={() => setSelectedFilter(item)}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  { color: selectedFilter === item ? "#FFFFFF" : "#000000" },
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Stories */}
+        <Text style={styles.Toptext}> Top Stories</Text>
+        <FlatList
+          data={stories}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.storyListContainer}
+          renderItem={({ item }) => (
+            <View style={styles.storyContainer}>
+              <Image source={item.image} style={styles.storyImage} />
+
+              <Text style={styles.storyName}>{item.name}</Text>
+              {item.isUser && (
+                <View style={styles.addStory}>
+                  <Text style={styles.plusIcon}>+</Text>
+                </View>
+              )}
+            </View>
+          )}
+        />
+
+        {/* Feeds */}
+        <Text style={styles.myfeedtext}> My Feed</Text>
+        <FlatList
+          data={feeds}
+          keyExtractor={(item: any) => item?.id}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item, index }) => {
+            const fullText = item.description || "";
+            const previewText = fullText.substring(0, 100);
+            const isExpanded = expandedStates[index];
+            return (
+              <View style={styles.feedContainer}>
+                {/* Feed Header */}
+                <View style={styles.feedHeader}>
+                  <TouchableOpacity>
+                    <Image source={item.userImage} style={styles.userImage} />
                   </TouchableOpacity>
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => handleOpenComments(item)}>
-                  <View style={styles.actionItem}>
-                    <Image
-                      source={require("../../resources/images/comment.png")}
-                      style={styles.actionIcon}
-                    />
-                    <Text style={styles.actionText}>{item.comments}</Text>
+                  <View style={styles.nameView}>
+                    <Text style={styles.username}>{item.username}</Text>
+                    <Text style={styles.timeText}>{moment(item.createdAt).fromNow()}</Text>
                   </View>
-                </TouchableOpacity>
-
-
-                <View style={styles.actionItem}>
-                  <Image
-                    source={require("../../resources/images/share.png")}
-                    style={styles.actionIcon}
-                  />
-                  <TouchableOpacity onPress={() => ShareModalRef.current?.open()}>
-                    <Text style={styles.actionText}>{item.shares}</Text>
-                  </TouchableOpacity>
-                </View>
-
-
-                <View style={styles.actionItem}>
-                  <Image
-                    source={require("../../resources/images/Vector.png")}
-                    style={styles.actionIcon}
-                  />
-                  <TouchableOpacity onPress={() => liveModalRef.current?.open()}>
-                    <Text style={styles.actionText}>{item.hvt}</Text>
-                  </TouchableOpacity>
-                </View>
-
-              </View>
-
-              {/* Description */}
-              <View style={styles.descriptionWrapper}>
-                <Text style={styles.postTitle}>{item.caption}</Text>
-                <Text style={styles.postDescription}>
-                  {isExpanded ? fullText : `${previewText}...`}
-                  <Text
-                    style={styles.readMoreText}
-                    onPress={() => toggleReadMore(index)}
+                  <TouchableOpacity
+                    style={[
+                      styles.followButton,
+                      item.isFollowing && styles.followingButton,
+                    ]}
+                    onPress={() => toggleFollow(item.id)}
                   >
-                    {isExpanded ? " less" : " more"}
-                  </Text>
-                </Text>
-              </View>
-
-              {/* Modals inside each item (not optimal, but works if content is per-post) */}
-              <ReusableModal
-                ref={LikeModalRef}
-                header={
-                  <View style={styles.bottomView}>
+                    <Text
+                      style={[
+                        styles.followText,
+                        item.isFollowing && styles.followingText,
+                      ]}
+                    >
+                      {item.isFollowing ? "Following" : "Follow"}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    ref={dotRef}
+                    onPress={openModal}
+                  >
                     <Image
-                      source={require("../../resources/images/Heart.png")}
-                      style={styles.LikeIcon}
+                      source={require("../../resources/images/more.png")}
+                      style={styles.moreIcon}
                     />
-                    <Text style={styles.actionText}>{item.likesCount}</Text>
-                  </View>
-                }
-                content={renderLikeModal}
-                modalHeight={scaleSizeHeight(320)}
-              />
+                  </TouchableOpacity>
+                </View>
 
-              <ReusableModal
-                ref={commentModalRef}
-                header={
-                  <View style={styles.commentbottomView}>
-                    <Image
-                      source={require("../../resources/images/comment.png")}
-                      style={styles.LikeIcon}
-                    />
-                    <Text style={styles.actionText}>{selectedPost?.comments || 0}</Text>
-                  </View>
-                }
-                content={renderCommentModal}
-                modalHeight={scaleSizeHeight(470)}
-              />
+                {/* Post Image */}
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("PostDetails", {
+                      image: item.postImage,
+                      type: "image",
+                    })
+                  }
+                >
+                  <Image source={item.postImage} style={styles.postImage} />
+                </TouchableOpacity>
 
-              <ReusableModal
-                ref={ShareModalRef}
-                header={
-                  <View style={styles.sharebottomView}>
+                {/* Action Bar */}
+                <View style={styles.actionBar}>
+                  <TouchableOpacity style={styles.actionItem}
+                    onPress={() => handleLike(item.id)}
+                  >
+                    {item.isLiked ? (
+                      <Image source={require("../../resources/images/Heart.png")} style={styles.HartIcon} />
+                    ) : (
+                      <Image source={require("../../resources/images/PlanHeart.png")} style={styles.PlanHartIcon} />
+                    )}
+                    <TouchableOpacity onPress={() => LikeModalRef.current?.open()}>
+                      <Text style={styles.actionText}>{item.likesCount}</Text>
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => handleOpenComments(item)}>
+                    <View style={styles.actionItem}>
+                      <Image
+                        source={require("../../resources/images/comment.png")}
+                        style={styles.actionIcon}
+                      />
+                      <Text style={styles.actionText}>{item.comments}</Text>
+                    </View>
+                  </TouchableOpacity>
+
+
+                  <TouchableOpacity onPress={() => ShareModalRef.current?.open()} style={styles.actionItem}>
                     <Image
                       source={require("../../resources/images/share.png")}
-                      style={styles.modalshareIcon}
+                      style={styles.actionIcon}
                     />
                     <Text style={styles.actionText}>{item.shares}</Text>
-                  </View>
-                }
-                content={renderShareModal}
-                modalHeight={scaleSizeHeight(300)}
-              />
+                  </TouchableOpacity>
 
-              <ReusableModal
-                ref={liveModalRef}
-                header={
-                  <View style={styles.bottomView}>
+
+                  <TouchableOpacity onPress={() => liveModalRef.current?.open()} style={styles.actionItem}>
                     <Image
                       source={require("../../resources/images/Vector.png")}
-                      style={styles.VectorIcon}
+                      style={styles.actionIcon}
                     />
+
                     <Text style={styles.actionText}>{item.hvt}</Text>
-                  </View>
-                }
-                content={renderliveModal(item)}
-                modalHeight={scaleSizeHeight(220)}
-              />
-            </View>
-          );
-        }}
-      />
+                  </TouchableOpacity>
+
+
+                </View>
+
+                {/* Description */}
+                <View style={styles.descriptionWrapper}>
+                  <Text style={styles.postTitle}>{item.caption}</Text>
+                  <Text style={styles.postDescription}>
+                    {isExpanded ? fullText : `${previewText}...`}
+                    <Text
+                      style={styles.readMoreText}
+                      onPress={() => toggleReadMore(index)}
+                    >
+                      {isExpanded ? " less" : " more"}
+                    </Text>
+                  </Text>
+                </View>
+
+                {/* Modals inside each item (not optimal, but works if content is per-post) */}
+                <ReusableModal
+                  ref={LikeModalRef}
+                  header={
+                    <View style={styles.bottomView}>
+                      <Image
+                        source={require("../../resources/images/Heart.png")}
+                        style={styles.LikeIcon}
+                      />
+                      <Text style={styles.actionText}>{item.likesCount}</Text>
+                    </View>
+                  }
+                  // content={renderLikeModal(item.likesCount)}
+                  content={<LikeModalContent users={users} toggleFollow={toggleFollow} />}
+                  modalHeight={scaleSizeHeight(320)}
+                />
+
+                <ReusableModal
+                  ref={commentModalRef}
+                  header={
+                    <View style={styles.commentbottomView}>
+                      <Image
+                        source={require("../../resources/images/comment.png")}
+                        style={styles.LikeIcon}
+                      />
+                      <Text style={styles.actionText}>{selectedPost?.comments || 0}</Text>
+                    </View>
+                  }
+                  // content={renderCommentModal}
+                  content={
+                    <CommentModalContent
+                      comments={comments}
+                      commentsLoading={commentsLoading}
+                      selectedPostId={selectedPostId}
+                      commentText={commentText}
+                      setCommentText={setCommentText}
+                      handleSendComment={handleSendComment}
+                    />
+                  }
+                  modalHeight={scaleSizeHeight(200)}
+                />
+
+                <ReusableModal
+                  ref={ShareModalRef}
+                  header={
+                    <View style={styles.sharebottomView}>
+                      <Image
+                        source={require("../../resources/images/share.png")}
+                        style={styles.modalshareIcon}
+                      />
+                      <Text style={styles.actionText}>{item.shares}</Text>
+                    </View>
+                  }
+                  content={renderShareModal}
+                  modalHeight={scaleSizeHeight(300)}
+                />
+
+                <ReusableModal
+                  ref={liveModalRef}
+                  header={
+                    <View style={styles.bottomView}>
+                      <Image
+                        source={require("../../resources/images/Vector.png")}
+                        style={styles.VectorIcon}
+                      />
+                      <Text style={styles.actionText}>{item.hvt}</Text>
+                    </View>
+                  }
+                  content={renderliveModal(item)}
+                  modalHeight={scaleSizeHeight(220)}
+                />
+                {/* More Options Modal */}
+                <Modal
+                  transparent
+                  animationType="fade"
+                  visible={isModalVisible}
+                  onRequestClose={() => setIsModalVisible(false)}
+                >
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    style={StyleSheet.absoluteFill}
+                    onPress={() => setIsModalVisible(false)}
+                  >
+                    <View style={[styles.modalContent, { top: modalPosition.top, right: modalPosition.right }]}>
+                      <TouchableOpacity style={styles.modalOption} onPress={() => {/* Handle Report action */ }}>
+                        <Text style={styles.modalText}>Report</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.modalOption} onPress={handleSave}>
+                        <Text style={styles.modalText}>Save</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.modalOption} onPress={() => {/* Handle Not interest action */ }}>
+                        <Text style={styles.modalText}>Not interest</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.modalOption} onPress={() => {/* Handle Hide action */ }}>
+                        <Text style={styles.modalText}>Hide</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                </Modal>
+                {/* //filter modal */}
+                <Modal
+                  transparent
+                  animationType="fade"
+                  visible={filterModalVisible}
+                  onRequestClose={() => setIsFilterModalVisible(false)}
+                >
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    style={StyleSheet.absoluteFill}
+                    onPress={() => setIsFilterModalVisible(false)}
+                  >
+                    <View style={[styles.modalContent, { top: modalPosition.top, right: modalPosition.right }]}>
+                      <TouchableOpacity style={styles.modalOption} onPress={() => {/* Handle Report action */ }}>
+                        <Text style={styles.modalText}>Shorts</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.modalOption} onPress={() => {/* Handle Save action */ }}>
+                        <Text style={styles.modalText}>Latest Update</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.modalOption} onPress={() => {/* Handle Not interest action */ }}>
+                        <Text style={styles.modalText}>BitCoin</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.modalOption} onPress={() => {/* Handle Hide action */ }}>
+                        <Text style={styles.modalText}>Funny</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.modalOption} onPress={() => {/* Handle Hide action */ }}>
+                        <Text style={styles.modalText}>Technology</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.modalOption} onPress={() => {/* Handle Hide action */ }}>
+                        <Text style={styles.modalText}>Entertaiment</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                </Modal>
+
+                {/* save bottom modal  */}
+                <ReusableModal
+                  ref={saveModalRef}
+                  header={
+                    <View style={styles.bottomView}>
+                      {/* <Image
+                        source={require("../../resources/images/save.png")} // Replace with appropriate save icon
+                        style={styles.LikeIcon}
+                      /> */}
+                      <Text style={styles.actionText}>Save</Text>
+                    </View>
+                  }
+                  content={
+                    <View style={styles.SaveModal}>
+                      {options.map(option => (
+                        <View style={styles.checkboxGroup}>
+                          <TouchableOpacity
+                            key={option}
+                            style={styles.checkboxContainer}
+                            onPress={() => toggleCheckbox(option)}
+                          >
+                            <Image
+                              source={
+                                selectedCategory.includes(option)
+                                  ? require('../../resources/images/checkCricle.png')
+                                  : require('../../resources/images/cricle.png')
+                              }
+                              style={styles.checkboxImage}
+                            />
+
+                          </TouchableOpacity>
+                          <Text style={styles.checkboxText}>{option}</Text>
+                        </View>
+                      ))}
+
+                      {/* </ScrollView> */}
+                      <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+                        <TextInput
+                          style={styles.nameInput}
+                          placeholder="Name"
+                          value={selectedCategory === "Create New" ? "" : undefined}
+                          onChangeText={(text) => {/* Handle custom name input */ }}
+                        />
+                        <TouchableOpacity style={styles.saveButton} onPress={() => saveModalRef.current?.close()}>
+                          <Text style={styles.saveButtonText}>Save</Text>
+                        </TouchableOpacity>
+                      </View>
+
+                    </View>
+                  }
+                  modalHeight={scaleSizeHeight(300)}
+                />
+              </View>
+            );
+          }}
+        />
+      </ScrollView>
     </View>
   );
 };
